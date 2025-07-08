@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}商標検索{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-css-reset/dist/reset.min.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: .4rem .6rem;
+    }
+
+    th {
+      background: #f3f3f3;
+    }
+  </style>
+</head>
+
+<body>
+  {% block content %}{% endblock %}
+</body>
+
+</html>

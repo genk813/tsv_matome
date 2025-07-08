@@ -1,0 +1,15 @@
+﻿Unnamed: 0,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9,Unnamed: 10,Unnamed: 11,Unnamed: 12,Unnamed: 13,Unnamed: 14,Unnamed: 15,Unnamed: 16,Unnamed: 17,Unnamed: 18,Unnamed: 19,Unnamed: 20,Unnamed: 21,Unnamed: 22,Unnamed: 23,Unnamed: 24,Unnamed: 25,Unnamed: 26,Unnamed: 27,Unnamed: 28,Unnamed: 29,Unnamed: 30,Unnamed: 31,Unnamed: 32,Unnamed: 33,Unnamed: 34,Unnamed: 35,Unnamed: 36,Unnamed: 37,Unnamed: 38,Unnamed: 39,Unnamed: 40,Unnamed: 41,Unnamed: 42,Unnamed: 43,Unnamed: 44,Unnamed: 45,Unnamed: 46,Unnamed: 47,Unnamed: 48,Unnamed: 49,Unnamed: 50,Unnamed: 51
+サブジェクトエリア名,,,,,,,,,,,,,出願マスタ（特実）,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ファイル名（論理名）,,,,,,,,,,,,,特許出願事件繰返データファイル,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ファイル名（物理名）,,,,,,,,,,,,,pmac_gr_app_case_repeat_data,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ファイル名,,,,,,,,,,,,,pmac_gr_app_case_repeat_data.tsv,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+項番,,提供項目名（論理名）,,,,,,,,,,,,,,,,,,,,,提供項目名（物理名）,,,,,,,,,,,,,"主
+キー",,論理データ型,,,,,,,,,,"コード
+INDEX",,,備考
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,型,,,,,最大桁数,,,,,,,,
+1,,四法コード,,,,,,,,,,,,,,,,,,,,,law_cd,,,,,,,,,,,,,○,,半角文字列型,,,,,1,,,,,01290,,,
+2,,出願番号,,,,,,,,,,,,,,,,,,,,,app_num,,,,,,,,,,,,,○,,半角文字列型,,,,,10,,,,,01550,,,
+3,,記事ID,,,,,,,,,,,,,,,,,,,,,article_id,,,,,,,,,,,,,○,,半角文字列型,,,,,2,,,,,01840,,,
+4,,繰返番号,,,,,,,,,,,,,,,,,,,,,repeat_num,,,,,,,,,,,,,○,,数値型,,,,,9,,,,,-,,,
+5,,審判記事_西暦審判番号,,,,,,,,,,,,,,,,,,,,,acap_appeal_num,,,,,,,,,,,,,,,半角文字列型,,,,,10,,,,,01560,,,

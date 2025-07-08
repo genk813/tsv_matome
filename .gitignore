@@ -1,0 +1,11 @@
+# Database files
+output.db
+output.db-*
+
+# Data directories
+tsv/
+decoded_tsvs/
+
+# Python cache
+__pycache__/
+*.pyc
