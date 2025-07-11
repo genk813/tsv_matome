@@ -15,8 +15,12 @@ on:
 jobs:
   run-claude:
     runs-on: ubuntu-latest
+    permissions:  # 👈 jobレベルにも明記！
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: anthropics/claude-code-action@v0
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}   # 👈 明示的に渡す！
