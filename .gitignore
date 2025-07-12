@@ -90,3 +90,5 @@ decoded_tsvs/
 csvs/
 history/
 TMSONAR_html/
+# Ignore large image files to reduce repository size
+images/final_complete/*.jpg
