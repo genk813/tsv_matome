@@ -1,94 +1,69 @@
 # Database files
+output.db
+output.db-*
 *.db
-*.db-shm
-*.db-wal
+*.sqlite
+*.sqlite3
+
+# Image files (large binary files)
+images/
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# TSV data files (large datasets)
+tsv_data/
+*.tsv
+*.csv
+
+# Temporary and log files
+*.log
+*.tmp
+temp/
+tmp/
 
 # Python cache
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-
-# Distribution / packaging
+*.pyc
+*.pyo
+*.pyd
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+*.so
+.cache/
 
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
+# Virtual environments
 venv/
-ENV/
-env.bak/
-venv.bak/
+env/
+.env
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Rope project settings
-.ropeproject
+# OS files
+.DS_Store
+Thumbs.db
 
-# mkdocs documentation
-/site
+# Backup files
+*.bak
+*.backup
+*_backup.py
+*_old.py
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Generated documentation
+*.pdf
+*.docx
 
-# Project specific
-tsv_data/
-images/
-decoded_tsvs/
-csvs/
-history/
-TMSONAR_html/
-# Ignore large image files to reduce repository size
-images/final_complete/*.jpg
+# Scripts that should be temporary
+scripts/tmp/
+
+# Weekly data directories
+weekly_data/
+
+# Search results
+search_results/
+*.html
