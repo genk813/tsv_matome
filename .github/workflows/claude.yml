@@ -1,7 +1,8 @@
-permissions:
-  contents: write        # コード修正
-  pull-requests: write   # PR 生成・更新
-  issues: write          # Issue 返信
+permissions:        # ← ここを追加
+  id-token: write   # OIDC 用。必須！
+  contents: write   # PR にコミットさせるなら
+  pull-requests: write
+  issues: write
   
 on:
   issue_comment:
