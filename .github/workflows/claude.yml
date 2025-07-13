@@ -1,3 +1,8 @@
+permissions:
+  contents: write        # コード修正
+  pull-requests: write   # PR 生成・更新
+  issues: write          # Issue 返信
+  
 on:
   issue_comment:
     types: [created]
