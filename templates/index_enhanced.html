@@ -720,10 +720,10 @@
                 <a href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ current_page - 1 }}&per_page={{ per_page }}"
                     class="btn btn-secondary">← 前のページ</a>
                 {% endif %}
-                {% if current_page < total_pages %} <a
-                    href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ current_page + 1 }}&per_page={{ per_page }}"
+                {% if current_page < total_pages %}
+                <a href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ current_page + 1 }}&per_page={{ per_page }}"
                     class="btn">次のページ →</a>
-                    {% endif %}
+                {% endif %}
             </div>
         </div>
 
@@ -888,30 +888,24 @@
         {% if total_pages > 1 %}
         <div class="pagination">
             {% if current_page > 1 %}
-            <a
-                href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page=1&per_page={{ per_page }}">最初</a>
-            <a
-                href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ current_page - 1 }}&per_page={{ per_page }}">前へ</a>
+            <a href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page=1&per_page={{ per_page }}">最初</a>
+            <a href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ current_page - 1 }}&per_page={{ per_page }}">前へ</a>
             {% endif %}
 
-            {% set start_page = 1 if current_page <= 3 else current_page - 2 %} {% set end_page=total_pages if
-                current_page>= total_pages - 2 else current_page + 2 %}
-                {% for page_num in range(start_page, end_page + 1) %}
+            {% set start_page = 1 if current_page <= 3 else current_page - 2 %}
+            {% set end_page = total_pages if current_page >= total_pages - 2 else current_page + 2 %}
+            {% for page_num in range(start_page, end_page + 1) %}
                 {% if page_num == current_page %}
                 <span class="current">{{ page_num }}</span>
                 {% else %}
-                <a
-                    href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ page_num }}&per_page={{ per_page }}">{{
-                    page_num }}</a>
+                <a href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ page_num }}&per_page={{ per_page }}">{{ page_num }}</a>
                 {% endif %}
-                {% endfor %}
+            {% endfor %}
 
-                {% if current_page < total_pages %} <a
-                    href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ current_page + 1 }}&per_page={{ per_page }}">
-                    次へ</a>
-                    <a
-                        href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ total_pages }}&per_page={{ per_page }}">最後</a>
-                    {% endif %}
+            {% if current_page < total_pages %}
+            <a href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ current_page + 1 }}&per_page={{ per_page }}">次へ</a>
+            <a href="?app_num={{ kw_app }}&mark_text={{ kw_mark }}&goods_classes={{ kw_goods_classes }}&designated_goods={{ kw_designated_goods }}&similar_group_codes={{ kw_similar_group_codes }}&page={{ total_pages }}&per_page={{ per_page }}">最後</a>
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}

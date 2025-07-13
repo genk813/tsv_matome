@@ -1,0 +1,1521 @@
+{
+  "database_info": {
+    "size_mb": 270.93,
+    "page_count": 69357,
+    "page_size": 4096
+  },
+  "tables": {
+    "jiken_c_t": {
+      "row_count": 16688,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 1
+        },
+        {
+          "name": "shutugan_bi",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "reg_reg_ymd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "2000099258",
+          "20000911",
+          ""
+        ],
+        [
+          "2003021599",
+          "20030319",
+          ""
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "shutugan_bi": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "reg_reg_ymd": {
+          "null_count": 12131,
+          "null_percentage": 72.69
+        }
+      }
+    },
+    "standard_char_t_art": {
+      "row_count": 15109,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "standard_char_t",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "1997102833",
+          "ＲＩＭＡＳＴＥＲ"
+        ],
+        [
+          "1998007990",
+          "米奉行"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "standard_char_t": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "goods_class_art": {
+      "row_count": 30582,
+      "columns": [
+        {
+          "name": "processing_type",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "law_cd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "reg_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "split_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "goods_cls_art_upd_ymd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "mu_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "goods_classes",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "0",
+          "4",
+          "0073914",
+          null,
+          "0000000001",
+          "20050413",
+          "000",
+          "33"
+        ],
+        [
+          "0",
+          "4",
+          "0168107",
+          null,
+          null,
+          "20050105",
+          "000",
+          "29"
+        ]
+      ],
+      "null_analysis": {
+        "processing_type": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "law_cd": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "reg_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "split_num": {
+          "null_count": 30457,
+          "null_percentage": 99.59
+        },
+        "normalized_app_num": {
+          "null_count": 4,
+          "null_percentage": 0.01
+        }
+      }
+    },
+    "jiken_c_t_shohin_joho": {
+      "row_count": 33385,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "designated_goods",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "2024138305",
+          "電気アイロン，電気かみそり及び電気バリカン，かみそり，手動利器"
+        ],
+        [
+          "2024138313",
+          "電子計算機のプログラムの設計・作成又は保守，コンピュータソフトウェアプラットフォームの提供（ＰａａＳ），人工知能に関する助言，電子データの保存用記憶領域の貸与，電子計算機の貸与，デジタルトランスフォーメーションのための技術的助言，オンラインによるアプリケーションソフトウェアの提供（ＳａａＳ），コンピュータ技術に関する助言，コンピュータセキュリティに関する指導及び助言，情報技術（ＩＴ）に関する助言（ソフトウェアプログラムのトラブルシューティング），ウェブサーバーの貸与，デザインの考案，電子計算機・自動車その他その用途に応じて的確な操作をするためには高度の専門的な知識・技術又は経験を必要とする機械の性能・操作方法等に関する紹介及び説明，ウェブサイトの作成又は保守，電気通信のネットワークセキュリティに関する指導及び助言，電子計算機用プログラムの提供"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "designated_goods": {
+          "null_count": 3,
+          "null_percentage": 0.01
+        }
+      }
+    },
+    "t_knd_info_art_table": {
+      "row_count": 64404,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "smlr_dsgn_group_cd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "1934019718",
+          "32F01"
+        ],
+        [
+          "1935022183",
+          "30A01"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "smlr_dsgn_group_cd": {
+          "null_count": 38,
+          "null_percentage": 0.06
+        }
+      }
+    },
+    "reg_mapping": {
+      "row_count": 33764,
+      "columns": [
+        {
+          "name": "app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "reg_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "0000000001",
+          "0073914"
+        ],
+        [
+          "0000000001",
+          "0072484"
+        ]
+      ],
+      "null_analysis": {
+        "app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "reg_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "right_person_art_t": {
+      "row_count": 17099,
+      "columns": [
+        {
+          "name": "processing_type",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "law_cd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "reg_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "split_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "rec_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "pe_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_psn_art_upd_ymd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_person_appl_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_person_addr_len",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_person_addr",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_person_name_len",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_person_name",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "0",
+          "4",
+          "6933137",
+          null,
+          null,
+          "00",
+          "000",
+          "20250529",
+          "591043581",
+          "0000000006",
+          "東京都新宿区",
+          "0000000006",
+          "東京都"
+        ],
+        [
+          "0",
+          "4",
+          "6933143",
+          null,
+          null,
+          "00",
+          "000",
+          "20250529",
+          "524389696",
+          "0000000007",
+          "中華人民共和国",
+          "0000000026",
+          "錦浪科技股▲ふん▼有限公司"
+        ]
+      ],
+      "null_analysis": {
+        "processing_type": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "law_cd": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "reg_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "split_num": {
+          "null_count": 17037,
+          "null_percentage": 99.64
+        },
+        "normalized_app_num": {
+          "null_count": 17099,
+          "null_percentage": 100.0
+        }
+      }
+    },
+    "t_dsgnt_art": {
+      "row_count": 31678,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "dsgnt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "1934019718",
+          "ヤマキタ"
+        ],
+        [
+          "1935022183",
+          "チクマアルプスレンポーウツクシガハラ"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "dsgnt": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "t_sample": {
+      "row_count": 10063,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "image_data",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "rec_seq_num",
+          "type": "INTEGER",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "1928007505",
+          "//////////////////////////////////////////////////////////////////////////////////////////+WVLvJsFOjsp4Ukwg3JskAuQYKhBkR0R0R0RzIFFCIxD1QiI0GE0GciOiOZkI+uhaDQiyEZHRHRHRHRHRHRSr69xoREREmWFDlDlDlDlDv1f+QIGt9X9aZEITt8gl0/h4TUjYaEGbGpQyBqoT69U0QygMNZFHKHKHYRBFsijkzb9f4SdEIwnHERSDJZEdGw2f/0yOsIX6hCL1f9oQxCf2RUNfp/6p+Ca9f7RBeGn0mEQVm5l/3rf9hen/9LfrrpbqLRBTL+19/6++vkGgd296DW/QfkMr3/6/r8N//f8PdSh9fWE76/Q+v3dra/D/d2v66hV7rr9oPcL+9O/10v71d39//vuk//X4V5DMHKgq2v0n6r94Qi1/X1ev0mpDSd+/1bv26YKE3W//XbSepAw4V3vf+t7hdCHg9177fegqr95BpjX1pegav6IoD5mGZ//pWC/2pDLHXd3+9a39qhb69f9U/rQN1V/rqvu/f/f/SBfWgn//f0ta1wv//v3+r+uu5J7i13pd/W3/aw9/Cv/9oet9VX/++/kHHm1aVf//0un/r9dVILj3+rUeF//v/9C9K6vXtetvb6XLcococjH6/uPtYS/whER9fyC4+ob914/9KO8jruTh4QV+//jX/q+v/3vyEH6///vXp7QV/3/zX9xT/et/T2QauOnOH7fS915dm2v2E097TaQT63iIZdhb7X+QSBqt1+I+o2vp8IK/3/Qn6l29f9fbj9hFD+v/yC7/6hxfX++nphlCvi3q9/yY9h/DNL96g/rIGB/c8dhr1+N6+njtfUL8hR6wZHX/kHfx9/8S77EH/in/DbChdUw+/1INxxyI9kV+GGI1C/hkdfuntpp5BB7m84rv7Yv9fHSxtpr39v+7+k9+z1yGH99/qK79xHVww9vb6/x0G+n99vyIP/9szTvCS5Eft9hTP5BiH3tiP/T7fX/KER0R4vkcFFQ2RHyh/r70GH/XsRETwESMe7WOsa603LdUyOiOuI/+3UKGU7/te6ESCCP00h1GIb/j2H/1WrV+vhv/77jfvb30vtb2D/V76/X2/r87om+9bWr338m6G6/1fm9/3oIoeGH1+69Bh/3iOQUD/vr/v6aDChi/vCreoT8gjrjDKHf+/3pt1vxD/0v209BRVOG6fcP1j4d+G/yb/+QYHIYj/4f1169Mt4c5P9vD16/X7/ohR7UiPw/4+96X///a3/fsYXs6Ljfdwb6f+6GMX/pb6/9cP/7/ev9ozTW/HUguPvX17hBwv/p/fVfIMQ+nf97yEH0n/Dv4ev7Xp//wx8N+Q49d/S9//C/V9w/9fT4UPaKFsgkf+7x91f1ar3qtba/6/67RB4xob52OOP1S18hshNVbr98hZnUet/7hx9PqqfCfW6v9poo7c+mPq+N/Uij6+639V7/X1v3/Y1XyT7p+t1/XV9HEI98Lff/r/BEdIPE38f9e+L/6Gr6/2v+lX16666t3/+vsTn3f9XW1/zH9/+n9WQR2uv/9/v+H7f/jr1LH//+Far9+1wuTe/IQf9UGmt+xWKce68J/rH17tmGR0ulVv/1hr/3EP/t7WsPhnECKHW/II/dQRT9eo+yCOQo+Ij9P9011X9OxH38e0vIo4arC/wv79qni699rT1/M4MQ0N0l8Ijr/1T9/GtQV/a/eO6XbojoL6r+RHyEepdXvxF1/63p0EnpbyCP919R26JOtwv7ohL3hV/FpV6C65h3T2n1+yPEcL1FrxTqlYTVfxHVWwiPa2taakV//jobTUPCVr//VEGR13Whfr9B+vJuq1hpaai63YzbMdV9vDW0wlv2CI6T7+t8FluZA1Vd7Ug1DhDroV7xwyDcK+9/EIMdPEhrjq5VA1v+QdxTT9SHHjkGFog0gX/xat64aZDKEutMV+1NeTYhML6wwq8MPkGgcofEML6eQYH1h41irPBQ5Q4X3sJhUvoVERGu30pDUHVyCD2KsnxQ4L90FEhVHeoiMkOTvIIOpMdECDMa44URGRjhDCDKHCgg1vUMragKF7UWVWEGVBnOOUOUOUOUOYf4YURERERETRVhkNM2DFkxyrOOFQNRERl4YcER01ERFn445Q4UREf//////////////////////////////////////////////////////////////////////////////////////ABABA",
+          1
+        ],
+        [
+          "1950025233",
+          "//////////////////////////////////////////////////////////////////////////////////////////////LNBF45ZuRhRzRSzeQ/GWaOvjWJVelLMM0f/bpcbOxdchJo7V5tBSOiOiOiOjnEKJLEcRrRHRwyOEUIocILxEWR0R1QRHRJSI6OAkQwkoUIKNiWOkIZHULDhBMuHLnEKLQIjoIscEgkccEEIcEVY46T0LQIFGccWEUOCL0tBoilQoscEXSElCRx3socUIsRDI9LKpI2iFojxHRojAy+J2GgRQ6SCaIo5Y4RHoiUPZhxEkOTwIjBtEfk2FkdhomSMGYMlAEFQZHjAMFyCHx7sQQ1KHKgbyY5MdQhDhaI/Lc0RwUuiOjiORH1OJUIhEdG2E4SERBEcgqW++yhwgxFe10R1LdKQUIRgpHQQiSHkdHZrp2RxZhyh9yGByhyQ5CDpFORNmRTlPUMokhBaTKHBEfZhzDgiPBwbQ7I/jCKciuCI+nIsCIYJkdzDl2UOIf7SLHKHFkdxKHjDBAnQyOlhEdBBNkea2IqDw3BAlTfigkspxaOOCL6G0h+OGFGDEQRdIHETDj44sJjoofsUKSeIIEhiGXCIKkiOoRHVkfLwQlD4giOkIRHQIocsciDhJqR1JukCI6CDBwoQRdWluKBF1fQIjg4pRkdBFuOIiPGQo5TggS7ERiza0IiFQbGIWmggTh2TcEC8SIOm12LZDA5McNojpxEegyhxhiVBIcNKER0Xq2RRx4iuR8hLoEyOghkdAmxGzOSHWGGR0EMZQ+px1DQYRT9KiOgQWxOOER1DWjDghYiN5JyKOccIjpoIUNaiw2EXTYRT+LSuOkIeCCqLLHDkQcIjpiOONggVwyQ4RHRhDhIILhEdUjQNkhwWy4E4+1DI8HkxyhwiPI45ThQQIXMOYcuAkCI7DwgTjwYjTtILxUIjpAgSoEUPqkVG5HQRQ5Q4SUShwhaVxDBPxEcbxUoeGJGPpWUOUOOgihxxqEEL1F5HWPEaI+0kEoRHTO4QKkgRHmJQ745Q+yP2YQiHYIeI2ER1DhAhHrXESOhGGhEbGyFHSewXKHCI6Du7OOeAxBFDljhEdSThhdBEcMaCYLqCt20hM4RHXXwQIdww8TRIW0kPjpMMTQHaRQ44MEU5Q9i2J3EQ+i/tQiOo2LQ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MOpMdC/G6YIp0/CcECHURYSGKQhBCkONiCI7D6Uw5Q8REREZnQeUOoqCBDI6dGHSfEY9YncUR1JwMEVZQ4IjkxtsIjqlCyY5Q5h+rLHCI6QKojMYIpzjhggQv9UjD8Ihx1LcySFITjoUCI6Q0kmUOJMdNoYZQ9wwiOkmEFhEdWR0CEfEMugjDlDjumER+wmR/QqqwiKPojqLIx8kOKS0SH+EENIo+ER0OhHbx8RMPEkKECpXIxxSSKHKHFpBGgUEC9BAtF0FpL8bEseR0HFJVxQzCRhw44hEdWkGCBdFwIIjoQixyGIQ8ER0INKE0ER18WR/xHDzv6HJvY8IIWVAoLaKHD0OER0xxb9TjsjqkTHJifhLvTSfiJUVNKljRblD9SPgofoIJpNWNwinS6SCx9hRcbiwghDpMujkkMY5IehxxGjjghEZ4KsJD5DjxoLoH6EbWR0S6CCEjp9BaBqa4IocIjoEU/E74UJBCIiPvoSh+uEU6hEdQwjuMIKPQ00ClDjI6LhYjwgtFOUOpbkqVNGHFpMiOER5FvZPLKwIIRhExxF0CKHIxxwokMaYTKcw54KHhAgQtljxRKBKceIpVFBXEm5TnHVW0+HEjkRxbhBDikEEPTyOoyOgQLhUPCQQIIOEUOp3wRdBBZHWOJTqgkPCdUER1hMEUPhEdKCBJaHKgECHQRQ40E+uR0wiOkCI+KOOiOgRU3bcIEGo4QQ5EyEMjoEU9SOoQQgiPRDQtCl/wwiOggiJoJ0inpMococw4RHoSj4izhwyoPgjSBYilEeCKHKHrvQoREIjyCI6YjQ+d2TCCiEUPQIFHoECSSQIIQQIbKmU4yOiOiPfDsEccocJ4QRY4qqEXIo40EEEgQLhC5GOSHCI6XQQTN5xAhCI6iEEIhsp7FtBFDljlD9DRT+IpBsRakdGNJFYEizYukjjwgQJL2R6TH4hsPQ4XYIIMILOIuEI6I6L5cUUIIj8aLHSERxa8JKUOccKECwkCBREREcRSERCCGFhBYZiCKHLHwghShFDgrCCLuOHDI5kc9CpGP+mGGNljggSxERERERozwiKOW4Ij8kPI6Cxw4RHQQiG0ioahCCI8EC6ggQiOCBWOFCCYWG6BAirsochYKNzJAmgtwSoSh+R+kW5hwgsF5HSCI6dj+04wxBAhBWCpQRHXGCbOOUOdk4KR0ih2ZhhDQQRGOK7CERaQL6BAnRHUIjpMEInHCBORXKHsofCtRwwSSYiNDCSZHAuXNIIU8IIUEUOPkhwgtjaSrxEscIYIj7EJpBAgQi2YyOvUjHEhoHbFSI+ER1ERXClOI6Rx2R000jDghCKHwaCDiJFEwQjhLKHUzimFQXGguyY4Q04sq0EccocECYJIER1Ziggsk0EoMWwQLChEdBFKOshoHBBCER0oI45UXEJiNJCItJIEkkjjgrFRJuQIhhMgXM8SKRHRHJFWFixezFKHEREXHbBAhJjuCBJIRGEIiLzrcRsodAih0ETHwRH1EREQyhwohhBREWgzQgwhGIiIj//yzkijyzrC3H/+WYOo///////////////////////////////////////////////////////////////////////////////////////wAQAQA==",
+          1
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "image_data": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "rec_seq_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "indct_use_t_art": {
+      "row_count": 31681,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "indct_use_t",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "1934019718",
+          "北（ヤマ）"
+        ],
+        [
+          "1935022183",
+          "▲ぽう▼連スプルア摩筑∞うつくしのはら＼美ヶ原＼ウツクシケハラ"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "indct_use_t": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "search_use_t_art_table": {
+      "row_count": 31681,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "search_use_t_seq",
+          "type": "INTEGER",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "search_use_t",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "2024104688",
+          1,
+          "ＥＴＯＣ"
+        ],
+        [
+          "2024104689",
+          1,
+          "ＥＴＯＣ"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "search_use_t_seq": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "search_use_t": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "jiken_c_t_shutugannindairinin": {
+      "row_count": 37019,
+      "columns": [
+        {
+          "name": "shutugan_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugannindairinin_code",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugannindairinin_sikbt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "2000099258",
+          "596053253",
+          "1"
+        ],
+        [
+          "2000099258",
+          "100092808",
+          "2"
+        ]
+      ],
+      "null_analysis": {
+        "shutugan_no": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "shutugannindairinin_code": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "shutugannindairinin_sikbt": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "applicant_master": {
+      "row_count": 0,
+      "columns": [
+        {
+          "name": "appl_cd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 1
+        },
+        {
+          "name": "appl_name",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "appl_addr",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [],
+      "null_analysis": {
+        "appl_cd": {
+          "null_count": 0,
+          "null_percentage": 0
+        },
+        "appl_name": {
+          "null_count": 0,
+          "null_percentage": 0
+        },
+        "appl_addr": {
+          "null_count": 0,
+          "null_percentage": 0
+        }
+      }
+    },
+    "applicant_mapping": {
+      "row_count": 573,
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "notnull": 0,
+          "pk": 1
+        },
+        {
+          "name": "applicant_code",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "applicant_name",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "applicant_addr",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "trademark_count",
+          "type": "INTEGER",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "confidence_level",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "created_date",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          1,
+          "000000055",
+          "アサヒグループホールディングス株式会社",
+          "東京都墨田区",
+          14,
+          "中",
+          "2025-07-11 22:34:39"
+        ],
+        [
+          2,
+          "000000066",
+          "味の素株式会社",
+          "東京都中央区",
+          6,
+          "中",
+          "2025-07-11 22:34:39"
+        ]
+      ],
+      "null_analysis": {
+        "id": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "applicant_code": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "applicant_name": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "applicant_addr": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "trademark_count": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "jiken_c_t_enhanced": {
+      "row_count": 16688,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 1
+        },
+        {
+          "name": "shutugan_bi",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "reg_reg_ymd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "masterkosin_nitiji",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "yonpo_code",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugan_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugan_shubetu1",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugan_shubetu2",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugan_shubetu3",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugan_shubetu4",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shutugan_shubetu5",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "seiri_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "saishushobun_shubetu",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "saishushobun_bi",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "raz_toroku_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "raz_bunkatu_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "bogo_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "toroku_bi",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "raz_sotugo_su",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "raz_nenkantugo_su",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "raz_kohohakko_bi",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "tantokan_code",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "pcz_kokaikohohakko_bi",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "kubun_su",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "torokusateijikubun_su",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "hyojunmoji_umu",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "rittaishohyo_umu",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "hyoshosikisai_umu",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shohyoho3jo2ko_flag",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "shohyoho5jo4ko_flag",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "genshutugan_shubetu",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "genshutuganyonpo_code",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "genshutugan_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "sokyu_bi",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "obz_shutugan_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "obz_toroku_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "obz_bunkatu_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "kosintoroku_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "pez_bunkatu_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "pez_bogo_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "kakikaetoroku_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "ktz_bunkatu_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "ktz_bogo_no",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "krz_kojoryozokuihan_flag",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "sokisinsa_mark",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "tekiyohoki_kubun",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "sinsa_shubetu",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "sosho_code",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "satei_shubetu",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "igiken_su",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "igiyuko_su",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "2000099258",
+          "20000911",
+          null,
+          null,
+          null,
+          "2000099258",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "",
+          null,
+          null,
+          "",
+          null,
+          null,
+          "",
+          null,
+          "20001005",
+          "001",
+          null,
+          "1",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "2003021599",
+          "20030319",
+          null,
+          null,
+          null,
+          "2003021599",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "",
+          null,
+          null,
+          "",
+          null,
+          null,
+          "",
+          null,
+          "20030410",
+          "001",
+          null,
+          "",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "shutugan_bi": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "reg_reg_ymd": {
+          "null_count": 16688,
+          "null_percentage": 100.0
+        },
+        "masterkosin_nitiji": {
+          "null_count": 16688,
+          "null_percentage": 100.0
+        },
+        "yonpo_code": {
+          "null_count": 16688,
+          "null_percentage": 100.0
+        }
+      }
+    },
+    "t_basic_item_enhanced": {
+      "row_count": 33404,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "prior_app_right_occr_dt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "conti_prd_expire_dt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "rjct_finl_dcsn_dsptch_dt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "rec_latest_updt_dt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "set_reg_dt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "reg_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "intl_reg_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "app_dt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "final_dspst_cd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "final_dspst_dt",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "2024022742",
+          "0",
+          "00000000",
+          "0",
+          "20240403",
+          "00000000",
+          "0000000",
+          "0000000",
+          "20240305",
+          "",
+          "00000000"
+        ],
+        [
+          "2024023498",
+          "0",
+          "20350526",
+          "0",
+          "20250609",
+          "20250526",
+          "6931534",
+          "0000000",
+          "20240307",
+          "",
+          "00000000"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "prior_app_right_occr_dt": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "conti_prd_expire_dt": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "rjct_finl_dcsn_dsptch_dt": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "rec_latest_updt_dt": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "mgt_info_enhanced": {
+      "row_count": 1,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "trial_dcsn_year_month_day",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "processing_type",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "conti_prd_expire_ymd",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "finl_dcsn_year_month_day",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "reg_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "split_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_disppr_year_month_day",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "1",
+          "",
+          "",
+          "",
+          "20191220",
+          "0000000000000000000000000000000",
+          "",
+          ""
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "trial_dcsn_year_month_day": {
+          "null_count": 1,
+          "null_percentage": 100.0
+        },
+        "processing_type": {
+          "null_count": 1,
+          "null_percentage": 100.0
+        },
+        "conti_prd_expire_ymd": {
+          "null_count": 1,
+          "null_percentage": 100.0
+        },
+        "finl_dcsn_year_month_day": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    },
+    "add_info_enhanced": {
+      "row_count": 33404,
+      "columns": [
+        {
+          "name": "normalized_app_num",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "right_request",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "grphc_id",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "color_harftone",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "gdmral_flg",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        },
+        {
+          "name": "duplicate_reg_flg",
+          "type": "TEXT",
+          "notnull": 0,
+          "pk": 0
+        }
+      ],
+      "samples": [
+        [
+          "1934019718",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "1935022183",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ],
+      "null_analysis": {
+        "normalized_app_num": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "right_request": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "grphc_id": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "color_harftone": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        },
+        "gdmral_flg": {
+          "null_count": 0,
+          "null_percentage": 0.0
+        }
+      }
+    }
+  },
+  "relationships": [],
+  "data_coverage": {},
+  "tsv_mapping": {}
+}

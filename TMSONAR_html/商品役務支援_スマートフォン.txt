@@ -1,0 +1,387 @@
+<head>
+    <meta charset="UTF-8">
+    <title>TM-SONAR</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css?t=1735116752">
+    <script src="/js/jquery-3.3.1.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/app.js?t=1745461823"></script>
+</head>
+<body style="font-family: sans-serif;" class="j2e">
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/"><img src="/images/tm_logo.png" style="height: 20px;"></a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
+                                    <li><a href="/honyaku?tb" target="_blank">翻訳</a></li>
+                    <li><a href="/usage?tb" target="_blank">利用件数</a></li>
+                    <li><a href="/datasource?tb" target="_blank">データソース</a></li>
+                                            <li><a href="/password?tb" target="_blank">パスワード変更</a></li>
+                    
+                                            <li><a href="#" onclick="window.close();">閉じる</a></li>
+                                                </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container" style="margin-bottom: 40px;">
+    <h1 class="page-title">
+    指定商品役務支援
+    <button type="button" class="btn btn-primary" id="trans-type-btn" onclick="app.toggleTransType()">日本語→英語</button>
+</h1>
+
+<div style="text-align: right; margin-bottom: 15px;">
+    <button type="button" class="btn btn-default config-btn" style="width: 120px;">環境設定</button>
+    <button type="button" class="btn btn-default import-btn" style="width: 120px;">辞書インポート</button>
+    <button type="button" class="btn btn-default clear-btn" style="width: 120px;">クリア</button>
+    <button type="button" class="btn btn-warning trans-btn" style="width: 120px;" disabled="">翻訳</button>
+    <button type="button" class="btn btn-primary excel-btn" style="width: 120px;">Excel出力</button>
+</div>
+
+<div class="alert alert-danger error" role="alert" style="display: none;"></div>
+
+<ul class="nav nav-tabs">
+    <li role="presentation" class="src-tab" style=""><a href="src-content">原文</a></li>
+    <li role="presentation" class="trans1-tab active" id="trans1-tab" style=""><a href="trans1-content">訳（１）</a></li>
+    <li role="presentation" class="trans2-tab" style=""><a href="trans2-content">訳（２）</a></li>
+    <li role="presentation" class="cross-tab" style="display: none;"><a href="cross-content">クロス</a></li>
+    <li role="presentation" class="text-tab" style=""><a href="text-content">テキスト</a></li>
+</ul>
+
+<div style="margin-top: 10px;">
+    <div class="tab-content src-content" style="display: none;"><form id="input-form">
+    <input type="hidden" name="translation" value="j2e">
+    <div class="form-group">
+        <textarea name="input1" class="form-control" rows="10" id="input1"></textarea>
+    </div>
+    <div class="form-group">
+        <textarea name="input2" class="form-control" rows="10" id="input2"></textarea>
+    </div>
+</form>
+</div>
+    <div class="tab-content trans1-content" style=""><table class="table table-striped">
+    <thead>
+    <tr>
+        <th style="white-space: nowrap;">原文</th>
+        <th style="white-space: nowrap;">種別</th>
+        <th style="white-space: nowrap;">訳文（参考）</th>
+        <th style="white-space: nowrap;">適用年</th>
+        <th style="white-space: nowrap;" class="caution">注意</th>
+        <th style="white-space: nowrap; display: none;">重複</th>
+        <th style="white-space: nowrap;">類似群（参考）</th>
+        <th style="white-space: nowrap;" colspan="2">
+            <span class="text-primary cursor-pointer ruijigun-count" data-ruijigun="{&quot;11B01&quot;:1,&quot;11C01&quot;:1}" onclick="app.showRuijigunModal($(this));">類似群数: 2</span>
+        </th>
+    </tr>
+    </thead>
+    <tbody id="list-trans1">
+    <tr class="row-trans1" id="row-trans1-1" data-name="trans1" data-id="62beb66b4fd460a9a48cf622de9260eb" data-uid="380d176be2916816f70ed71d8a24594a">
+        <td class="input" data-value="スマートフォン">スマートフォン</td>
+        <td class="law_label" style="white-space: nowrap;" data-value="基12">基12</td>
+        <td class="trans" data-value="Smartphones">Smartphones</td>
+        <td class="yyyy" data-value="2025">2025</td>
+        <td class="caution" data-value=""></td>
+        <td class="duplicated" style="display: none;" data-value=""></td>
+        <td class="ruijigun" data-value="[09] 11B01 11C01">[09] 11B01 11C01</td>
+        <td style="width: 0;"><button type="button" class="btn btn-xs btn-default trans-select-btn">選択</button></td>
+        <td style="width: 0;"><button type="button" class="btn btn-xs btn-default fuzzy-search-btn">検索</button></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+    <div class="tab-content trans2-content" style="display: none;"><table class="table table-striped">
+    <thead>
+    <tr>
+        <th style="white-space: nowrap;">原文</th>
+        <th style="white-space: nowrap;">種別</th>
+        <th style="white-space: nowrap;">訳文（参考）</th>
+        <th style="white-space: nowrap;">適用年</th>
+        <th style="white-space: nowrap;" class="caution">注意</th>
+        <th style="white-space: nowrap; display: none;">重複</th>
+        <th style="white-space: nowrap;">類似群（参考）</th>
+        <th style="white-space: nowrap;" colspan="2">
+            <span class="text-primary cursor-pointer ruijigun-count"></span>
+        </th>
+    </tr>
+    </thead>
+    <tbody id="list-trans2"></tbody>
+</table>
+</div>
+    <div class="tab-content cross-content" style="display: none;"><div class="row">
+    <div class="col-xs-6">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th style="white-space: nowrap;">原文（１）</th>
+                <th style="white-space: nowrap;">訳</th>
+                <th style="white-space: nowrap;">適用年</th>
+                <th style="white-space: nowrap;">重複</th>
+                <th style="white-space: nowrap;">類似群（参考）</th>
+            </tr>
+            </thead>
+            <tbody id="list-cross1">
+            <tr class="row-cross1" id="row-cross1-1" data-name="cross1">
+                <td class="input" data-value="スマートフォン">スマートフォン</td>
+                <td class="translated" data-value="○">○</td>
+                <td class="yyyy" data-value="2025">2025</td>
+                <td class="duplicated text-center" data-value=""></td>
+                <td class="ruijigun" data-value="[09] 11B01 11C01">[09] 11B01 11C01</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-xs-6">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th style="white-space: nowrap;">原文（２）</th>
+                <th style="white-space: nowrap;">訳</th>
+                <th style="white-space: nowrap;">適用年</th>
+                <th style="white-space: nowrap;">重複</th>
+                <th style="white-space: nowrap;">類似群（参考）</th>
+            </tr>
+            </thead>
+            <tbody id="list-cross2"></tbody>
+        </table>
+    </div>
+</div>
+
+<label>重複する指定商品・役務</label>
+<div class="row">
+    <div class="col-xs-6">
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="cross1-input"></textarea>
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="cross1-trans"></textarea>
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="cross2-input"></textarea>
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="cross2-trans"></textarea>
+        </div>
+    </div>
+</div>
+</div>
+    <div class="tab-content text-content" style="display: none;"><div class="row">
+    <div class="col-xs-6">
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="text1-input">スマートフォン</textarea>
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="text1-trans">Smartphones;</textarea>
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="text2-input"></textarea>
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" rows="10" id="text2-trans"></textarea>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+<div id="workspace"></div>
+
+<div class="modal fade" id="trans-select-modal" tabindex="-1" role="dialog" aria-labelledby="transModalLabel">
+    <div class="modal-dialog" role="document" style="width: 1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">訳文リスト</h4>
+            </div>
+            <div class="modal-body" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>原文</th>
+                        <th>種別</th>
+                        <th>訳文（参考）</th>
+                        <th>適用年</th>
+                        <th class="caution">注意</th>
+                        <th>類似群（参考）</th>
+                    </tr>
+                    </thead>
+                    <tbody id="list-trans-select"></tbody>
+                </table>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="fuzzy-search-modal" tabindex="-1" role="dialog" aria-labelledby="transModalLabel">
+    <div class="modal-dialog" role="document" style="width: 1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">検索結果</h4>
+            </div>
+            <div class="modal-body" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+                <form action="javascript:app.fuzzySearch();" id="fuzzy-search-form">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="fuzzy-search-input">
+                            <span class="input-group-btn">
+                            <button type="submit" class="btn btn-default" id="fuzzy-search-form-btn" data-loading-text="検索中...">検索</button>
+                        </span>
+                        </div>
+                    </div>
+                </form>
+                <table class="table table-striped table-hover" id="fuzzy-search-list">
+                    <thead>
+                    <tr>
+                        <th>原文</th>
+                        <th>種別</th>
+                        <th>訳文（参考）</th>
+                        <th>適用年</th>
+                        <th class="caution">注意</th>
+                        <th>類似群（参考）</th>
+                    </tr>
+                    </thead>
+                    <tbody id="list-fuzzy-search"></tbody>
+                </table>
+                <div id="fuzzy-search-no-result" style="display: none;">
+                    該当データがありません。
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" id="config-modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">環境設定</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger error config-error" role="alert" style="display: none;"></div>
+                <div class="modal-form"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default modal-close-btn" data-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-primary modal-submit-btn" onclick="app.saveConfig();">保存</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" id="import-modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">辞書インポート</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger error import-error" role="alert" style="display: none;"></div>
+
+                <form id="import-form">
+                    <div class="form-group">
+                        <label>インポート方法</label>
+                        <div class="radio">
+                            <label><input type="radio" name="type" value="replace" checked=""> すべてのユーザー辞書データを置き換える</label><br>
+                            <label><input type="radio" name="type" value="add"> ユーザー辞書に新たなデータを追加する</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Excelファイル</label>
+                        <div>
+                            <button type="button" class="btn btn-default btn-sm" onclick="app.selectFile();">ファイルを選択</button>
+                            <input type="file" name="file" id="file" accept=".xls,.xlsx" style="display: none;">
+                            <input type="hidden" name="xls" id="xls">
+                            <div id="file-status"></div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default modal-close-btn" data-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-primary modal-import-btn" onclick="app.import();" disabled="">インポート</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" id="ruijigun-modal">
+    <div class="modal-dialog" role="document" style="width: 250px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">類似群コード毎の数</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped" id="ruijigun-modal-list">
+                    <thead>
+                    <tr>
+                        <th>コード</th>
+                        <th>数</th>
+                    </tr>
+                    </thead>
+                    <tbody id="ruijigun-modal-list-body">
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" id="importing-modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                インポート中...
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" id="loading-modal">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                読み込み中...
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="auto-trans-confirm-modal" tabindex="-1" role="dialog" aria-labelledby="autoTransConfirmModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="autoTransConfirmModalLabel">翻訳確認</h4>
+            </div>
+            <div class="modal-body">
+                従量料金が課金されます。翻訳を行いますか？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="app.transAndShowResult();">翻訳する</button>
+            </div>
+        </div>
+    </div>
+</div></div>
+
+
+
+</body>

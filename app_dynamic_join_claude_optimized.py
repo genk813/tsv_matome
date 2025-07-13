@@ -351,26 +351,26 @@ def index():
             
             # 商品・役務区分
             if kw_goods_classes:
-                from_parts.append("LEFT JOIN v_goods_classes AS grouped_gca ON j.normalized_app_num = grouped_gca.normalized_app_num")
+                from_parts.append("LEFT JOIN goods_class_art AS gca ON j.normalized_app_num = gca.normalized_app_num")
                 terms = kw_goods_classes.split()
                 for term in terms:
-                    where_parts.append("grouped_gca.concatenated_classes LIKE ?")
+                    where_parts.append("gca.goods_classes LIKE ?")
                     params.append(f"%{term}%")
             
             # 指定商品・役務名
             if kw_designated_goods:
-                from_parts.append("LEFT JOIN v_designated_goods AS grouped_sg ON j.normalized_app_num = grouped_sg.normalized_app_num")
+                from_parts.append("LEFT JOIN jiken_c_t_shohin_joho AS jcs ON j.normalized_app_num = jcs.normalized_app_num")
                 terms = kw_designated_goods.split()
                 for term in terms:
-                    where_parts.append("grouped_sg.concatenated_goods LIKE ?")
+                    where_parts.append("jcs.designated_goods LIKE ?")
                     params.append(f"%{term}%")
             
             # 類似群コード
             if kw_similar_group_codes:
-                from_parts.append("LEFT JOIN v_similar_group_codes AS grouped_tknd ON j.normalized_app_num = grouped_tknd.normalized_app_num")
+                from_parts.append("LEFT JOIN t_knd_info_art_table AS tknd ON j.normalized_app_num = tknd.normalized_app_num")
                 terms = kw_similar_group_codes.split()
                 for term in terms:
-                    where_parts.append("grouped_tknd.concatenated_codes LIKE ?")
+                    where_parts.append("tknd.smlr_dsgn_group_cd LIKE ?")
                     params.append(f"%{term}%")
             
             sub_query_from = " ".join(from_parts)

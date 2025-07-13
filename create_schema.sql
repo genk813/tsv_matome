@@ -133,10 +133,14 @@ CREATE TABLE IF NOT EXISTS applicant_master (
 );
 
 CREATE TABLE IF NOT EXISTS applicant_mapping (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     applicant_code TEXT,          -- 申請人コード
     applicant_name TEXT,          -- 申請人名
     applicant_addr TEXT,          -- 申請人住所
-    trademark_count INTEGER       -- 商標件数
+    trademark_count INTEGER,      -- 商標件数
+    confidence_level TEXT,        -- 信頼度レベル
+    created_date TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(applicant_code, applicant_name, applicant_addr)
 );
 
 -- 検索最適化用のVIEW

@@ -53,6 +53,7 @@ Thumbs.db
 *.backup
 *_backup.py
 *_old.py
+output.db.backup_*
 
 # Generated documentation
 *.pdf

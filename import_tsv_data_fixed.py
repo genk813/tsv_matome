@@ -131,8 +131,8 @@ def import_jiken_c_t_shohin_joho(conn, tsv_path):
     with open(tsv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader:
-            # 正しいカラム名を使用
-            app_num = row.get('app_num', '')
+            # TSVファイルの実際のカラム名を使用
+            app_num = row.get('shutugan_no', '')
             normalized_app_num = app_num.replace('-', '') if app_num else None
             
             cursor.execute("""
@@ -140,7 +140,7 @@ def import_jiken_c_t_shohin_joho(conn, tsv_path):
                 VALUES (?, ?)
             """, (
                 normalized_app_num,
-                row.get('designated_goods')
+                row.get('shohinekimumeisho')  # 実際のカラム名
             ))
             imported += 1
             
@@ -365,6 +365,34 @@ def import_search_use_t_art_table(conn, tsv_path):
     conn.commit()
     print(f"  完了: {imported} レコードをインポート")
 
+def import_jiken_c_t_shutugannindairinin(conn, tsv_path):
+    """jiken_c_t_shutugannindairinin テーブルにデータをインポート"""
+    print(f"インポート中: {tsv_path} -> jiken_c_t_shutugannindairinin")
+    
+    cursor = conn.cursor()
+    imported = 0
+    
+    with open(tsv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        for row in reader:
+            # TSVファイルの実際のカラム名を使用
+            cursor.execute("""
+                INSERT OR REPLACE INTO jiken_c_t_shutugannindairinin 
+                (shutugan_no, shutugannindairinin_code, shutugannindairinin_sikbt)
+                VALUES (?, ?, ?)
+            """, (
+                row.get('shutugan_no'),
+                row.get('shutugannindairinin_code'),
+                row.get('shutugannindairinin_sikbt')
+            ))
+            imported += 1
+            
+            if imported % 1000 == 0:
+                print(f"  {imported} レコード処理済み...")
+    
+    conn.commit()
+    print(f"  完了: {imported} レコードをインポート")
+
 def search_tsv_files(base_dir):
     """TSVファイルを検索"""
     print(f"TSVファイルを検索中: {base_dir}")
@@ -386,7 +414,8 @@ def search_tsv_files(base_dir):
         't_dsgnt_art': ['upd_t_dsgnt_art.tsv', 't_dsgnt_art.tsv'],
         't_sample': ['upd_t_sample.tsv', 't_sample.tsv'],
         'indct_use_t_art': ['upd_indct_use_t_art.tsv', 'indct_use_t_art.tsv'],
-        'search_use_t_art_table': ['upd_search_use_t_art_table.tsv', 'search_use_t_art_table.tsv']
+        'search_use_t_art_table': ['upd_search_use_t_art_table.tsv', 'search_use_t_art_table.tsv'],
+        'jiken_c_t_shutugannindairinin': ['upd_jiken_c_t_shutugannindairinin.tsv', 'jiken_c_t_shutugannindairinin.tsv']
     }
     
     found_files = {}
@@ -450,7 +479,8 @@ def main():
         't_dsgnt_art': import_t_dsgnt_art,
         't_sample': import_t_sample,
         'indct_use_t_art': import_indct_use_t_art,
-        'search_use_t_art_table': import_search_use_t_art_table
+        'search_use_t_art_table': import_search_use_t_art_table,
+        'jiken_c_t_shutugannindairinin': import_jiken_c_t_shutugannindairinin
     }
     
     try:
