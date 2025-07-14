@@ -2,359 +2,395 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Purpose** — TMCloud-specific guide that extends CLAUDE_BASE.md principles for autonomous yet safe development.
+
+---
+
+## TL;DR (TMCloud Specifics)
+
+* ✅ **Database first**: Always verify database state with `python3 autonomous_system_launcher.py status`
+* 📐 **Single-query optimization**: Use JOINs to avoid N+1 problems in search functions
+* 🧪 **Test with CLI first**: Validate search logic with `cli_trademark_search.py` before web implementation
+* ⛔ **Never** modify core TSV import logic without backup and comprehensive testing
+* 🛑 **Escalate** when: database corruption risk • search performance regression > 1s • data quality score < 90
+
+---
+
 ## Project Overview
 
-TSV_MATOME is a Japanese trademark search system that processes TSV (Tab-Separated Values) files from the Japan Patent Office, manages trademark data in SQLite, and provides both web-based and command-line search interfaces. The system handles domestic and international trademark data with unified search capabilities, processing trademark text, applicant information, rights holder data, images, and goods classification.
+TMCloud (formerly tsv_matome) is a comprehensive Japanese trademark search system that processes TSV files from the Japan Patent Office. It provides both web-based and command-line search interfaces with advanced search capabilities, automated testing, and self-improvement features.
 
 ## Core Architecture
 
 ### Database Layer
-- **Main Database**: `output.db` (SQLite) - contains 31+ tables with 450,000+ total records (optimized as of 2025-07-13)
-- **Schema**: Defined in `create_schema.sql` and `scripts/phase2_schema.sql` with 43+ optimized indexes
-- **Database Size**: ~288MB with comprehensive domestic and international trademark data
-- **Unified Search**: `unified_trademark_search_view` - combines domestic and international trademarks (2,018,919+ records)
-- **Key Domestic Tables**:
-  - `jiken_c_t` - Core trademark case information (22,227+ records, 100% coverage) 
-  - `standard_char_t_art`, `indct_use_t_art`, `search_use_t_art_table` - Trademark text (90%+ coverage)
-  - `right_person_art_t` - Rights holder information (registered trademarks only)
-  - `jiken_c_t_shutugannindairinin` - Applicant/agent information 
-  - `jiken_c_t_shohin_joho` - Designated goods/services information (100% coverage)
-  - `goods_class_art` - Goods/services classification (30,582 records with optimized indexes)
-  - `reg_mapping` - Critical mapping table linking application numbers to registration numbers (33,764 mappings)
-  - `applicant_mapping` - Partial applicant code to name mapping (573 entries with confidence levels)
-  - `t_sample` - Trademark image data (Base64 encoded images)
-  - `t_knd_info_art_table` - Similar group codes (64,404+ records)
-- **International Trademark Tables (Phase 2)**:
-  - `intl_trademark_registration` - International trademark registration management (1,430 records)
-  - `intl_trademark_progress` - International trademark progress information (5,738 records)
-  - `intl_trademark_holder` - International trademark rights holder information (1,492 records)
-  - `intl_trademark_goods_services` - International trademark goods/services classification (2,280 records)
-  - `intl_trademark_text` - International trademark text information (1,339 records)
+- **Main Database**: `output.db` (SQLite, ~288MB)
+- **Schema**: Defined in `create_schema.sql` and `scripts/phase2_schema.sql`
+- **31+ tables** with 450,000+ total records
+- **43+ optimized indexes** for performance
+- **Unified search view** combining domestic and international trademarks (2,018,919+ records)
 
-### Application Layer
-- **Production Flask App**: `app_dynamic_join_claude_optimized.py` - Main web interface (port 5002)
-- **Optimized CLI Search Tool**: `cli_trademark_search.py` - High-performance command-line interface with duplicate elimination
-- **Enhanced CLI Search**: `cli_trademark_search_enhanced.py` - TM-SONAR compliant search with advanced normalization
-- **Text Normalization**: `text_normalizer.py` - TM-SONAR level text processing and pronunciation matching
-- **Autonomous System**: `autonomous_system_launcher.py` - Self-testing and improvement system
-- **HTML Generators**: `search_results_html_generator_improved.py` - Responsive HTML output with folding
-- **Core Architecture**: Direct search optimization pattern bypassing unified view for performance (2041x improvement achieved)
-- **Unified Search System**: Seamless integration of domestic 🇯🇵 and international 🌍 trademark data with duplicate elimination
+### Key Database Tables
+- `jiken_c_t` - Core trademark case information (22,227+ records)
+- `standard_char_t_art`, `indct_use_t_art`, `search_use_t_art_table` - Trademark text data
+- `right_person_art_t` - Rights holder information 
+- `goods_class_art` - Goods/services classification (30,582 records)
+- `reg_mapping` - Application to registration number mapping (33,764 mappings)
+- `t_sample` - Trademark image data (Base64 encoded)
+- International trademark tables for Madrid Protocol data
 
-### Data Processing Pipeline
-- **TSV Import**: `import_tsv_data_fixed.py` - Handles 77+ different TSV file types (272MB+ total)
-- **Phase 2 International Import**: `scripts/import_phase2_international_trademarks.py` - International trademark data import
-- **Database Optimization**: `database_optimization.py` - Performance optimization and duplicate removal
-- **Image Processing**: `extract_images_no_pandas.py` - Extracts Base64 images (6,488+ images available)
-- **Weekly Updates**: `weekly_data_updater.py` - Incremental data updates with automatic backups
-- **Unified Search View**: `scripts/create_unified_trademark_view.sql` - Creates integrated domestic/international search view
+## Key Commands
 
-## Common Commands
-
-### Database Operations
+### System Operations
 ```bash
-# Initialize fresh database with optimized schema
+# System status check and diagnostics
+python3 autonomous_system_launcher.py status
+
+# Database initialization (creates schema and indexes)
 python3 init_database.py
 
-# Build critical reg_mapping table (enables rights holder display)
+# Import all TSV data files (77+ files)
+python3 import_tsv_data_fixed.py
+
+# Build critical application-to-registration mapping
 python3 build_reg_mapping.py
 
-# Create partial applicant mapping (enables some applicant name display) 
-python3 create_partial_applicant_mapping.py
-
-# Phase 1: Import applicant master data (improves applicant name coverage)
-python3 import_applicant_master_data.py
-
-# Phase 2: Import international trademark data (Madrid Protocol)
-python3 scripts/import_phase2_international_trademarks.py
-
-# Create unified search view for domestic and international trademarks
-python3 -c "
-import sqlite3
-conn = sqlite3.connect('output.db')
-with open('scripts/create_unified_trademark_view.sql', 'r', encoding='utf-8') as f:
-    conn.executescript(f.read())
-conn.commit()
-conn.close()
-"
-
-# Run comprehensive database optimization (indexes, duplicate removal)
-python3 database_optimization.py
-
-# CRITICAL: If data integrity issues arise (Sony search returns 0)
-python3 fix_sony_search_corrected.py
-
-# Apply optimized unified view (resolves duplicate display issues)
-python3 -c "
-import sqlite3
-conn = sqlite3.connect('output.db')
-with open('scripts/create_unified_trademark_view_fixed.sql', 'r', encoding='utf-8') as f:
-    conn.executescript(f.read())
-conn.commit()
-conn.close()
-"
+# Extract trademark images from database
+python3 extract_images_no_pandas.py
 ```
 
-### Search and Analysis
+### Search and Testing
 ```bash
-# Unified CLI trademark search (domestic + international)
-python3 cli_trademark_search.py --mark-text "ソニー" --limit 10
-python3 cli_trademark_search.py --app-num "2020138119"
-python3 cli_trademark_search.py --goods-classes "09" --limit 5
-python3 cli_trademark_search.py --similar-group-codes "11C01" --limit 5
+# High-performance CLI search (unified domestic/international)
+python3 cli_trademark_search.py
 
-# International trademark specific searches
-python3 cli_trademark_search.py --intl-reg-num "0489196"
-python3 cli_trademark_search.py --international --goods-classes "42" --limit 5
+# Enhanced CLI search with TM-SONAR compliance
+python3 cli_trademark_search_enhanced.py
 
-# Enhanced CLI search with TM-SONAR normalization
-python3 cli_trademark_search_enhanced.py --mark-text "ソニー" --enhanced --limit 10
-python3 cli_trademark_search_enhanced.py --mark-text "チヂミ" --pronunciation --limit 5
-python3 cli_trademark_search_enhanced.py --mark-text "ソニー,パナソニック" --tm-sonar --limit 20
-python3 cli_trademark_search_enhanced.py --mark-text "ソニ？" --fuzzy --limit 15
-
-# Enhanced applicant search
-python3 cli_trademark_search_enhanced.py --applicant-name "ＮＴＴ株式会社" --limit 5
-
-# Generate responsive HTML search results
-python3 search_results_html_generator_improved.py --mark-text "ブル" --limit 3 --output "results.html"
-
-# Autonomous system operations
-python3 autonomous_system_launcher.py status
-python3 autonomous_system_launcher.py search --mark-text "ソニー" --limit 10
-python3 autonomous_system_launcher.py test
-python3 autonomous_system_launcher.py improve
-```
-
-### Application Servers
-```bash
-# Production Flask app (requires: pip install flask)
-python3 app_dynamic_join_claude_optimized.py
-# → http://localhost:5002
-
-# Enhanced server with applicant support
-python3 enhanced_web_server.py
-# → http://localhost:8001
-
-# Basic test server (no Flask required)
-python3 simple_web_test.py  
-# → http://localhost:8000
-```
-
-### System Diagnostics and Maintenance
-```bash
-# Comprehensive system analysis and current challenges
-python3 analyze_current_state.py
-python3 deep_current_challenges_analysis.py
-
-# Performance optimization analysis
-python3 optimize_goods_classification_search.py
-
-# Test unified view compatibility (if needed)
-python3 fix_unified_view_compatibility.py
-
-# Run comprehensive search testing (all patterns)
+# Comprehensive system testing
 python3 comprehensive_search_test.py
 
-# Coverage analysis and data quality assessment
-python3 analyze_coverage_gaps.py
-python3 analyze_database_detailed.py
-
-# Apply fixed unified view (resolves duplicate issues)
-python3 -c "
-import sqlite3
-conn = sqlite3.connect('output.db')
-with open('scripts/create_unified_trademark_view_fixed.sql', 'r', encoding='utf-8') as f:
-    conn.executescript(f.read())
-conn.commit()
-conn.close()
-"
+# Performance benchmarking
+python3 performance_benchmark.py
 ```
 
-## Key Implementation Details
+### Web Application
+```bash
+# Production web server (port 5002)
+python3 app_dynamic_join_claude_optimized.py
 
-### Critical System Fixes (2025-07-13)
-**IMPORTANT**: The system underwent major repairs on 2025-07-13. All critical issues resolved:
+# Enhanced web interface with modern styling
+python3 enhanced_web_server.py
+```
 
-1. **Duplicate Display Fix**: Resolved 2041x duplication in search results (Sony: 4082→2 results)
-2. **Performance Optimization**: Goods classification search from timeout to <1s response time
-3. **Data Integrity**: Added 5,539 missing `jiken_c_t` records, resolved all orphaned data
-4. **Search Architecture**: Implemented direct search bypass for unified view performance issues
-5. **Index Optimization**: Added composite indexes achieving 99.98% performance improvement
+### Data Maintenance
+```bash
+# Weekly data updates with automatic backups
+python3 weekly_data_updater.py
 
-### Database Integrity Patterns
+# Database optimization and duplicate removal
+python3 database_optimization.py
+
+# Applicant master data import
+python3 import_applicant_master_data.py
+```
+
+## Critical Development Patterns
+
+### Single-Query Optimization
+Always use single-query patterns to avoid N+1 problems. Example:
 ```python
-# CRITICAL: Always check for missing jiken_c_t records before queries
-def ensure_data_integrity():
-    """Ensure trademark text tables have corresponding jiken_c_t records"""
-    missing_query = """
-        SELECT DISTINCT s.normalized_app_num
-        FROM standard_char_t_art s
-        LEFT JOIN jiken_c_t j ON s.normalized_app_num = j.normalized_app_num
-        WHERE j.normalized_app_num IS NULL
-    """
-    # If missing records found, run fix_sony_search_corrected.py
+# Good - single query with JOIN
+query = """
+SELECT jiken.*, standard.*, goods.*
+FROM jiken_c_t jiken
+LEFT JOIN standard_char_t_art standard ON jiken.app_num = standard.app_num
+LEFT JOIN goods_class_art goods ON jiken.app_num = goods.app_num
+WHERE jiken.app_num = ?
+"""
+
+# Bad - multiple queries causing N+1 problem
+for row in basic_results:
+    standard_info = get_standard_info(row['app_num'])  # Additional query
+    goods_info = get_goods_info(row['app_num'])        # Additional query
 ```
 
-### Single-Query Optimization Pattern
+### Normalized Application Numbers
+Always use normalized application number format (`normalized_app_num`):
 ```python
-# ALWAYS use this pattern for search queries to avoid N+1 problems
-def get_optimized_results(app_nums: List[str]) -> List[Dict]:
-    query = f"""
-        SELECT DISTINCT
-            j.normalized_app_num AS app_num,
-            COALESCE(s.standard_char_t, iu.indct_use_t, su.search_use_t) as mark_text,
-            COALESCE(rm.reg_num, 'なし') AS registration_number,
-            rp.right_person_name as holder_name,
-            GROUP_CONCAT(DISTINCT gca.goods_classes) AS goods_classes,
-            tknd.smlr_dsgn_group_cd as similar_groups,
-            td.dsgnt as pronunciation,
-            CASE WHEN ts.image_data IS NOT NULL THEN 'あり' ELSE 'なし' END as has_image
-        FROM jiken_c_t j
-        LEFT JOIN standard_char_t_art s ON j.normalized_app_num = s.normalized_app_num
-        LEFT JOIN indct_use_t_art iu ON j.normalized_app_num = iu.normalized_app_num
-        LEFT JOIN search_use_t_art_table su ON j.normalized_app_num = su.normalized_app_num
-        LEFT JOIN reg_mapping rm ON j.normalized_app_num = rm.app_num
-        LEFT JOIN right_person_art_t rp ON rm.reg_num = rp.reg_num
-        LEFT JOIN goods_class_art gca ON j.normalized_app_num = gca.normalized_app_num
-        LEFT JOIN t_knd_info_art_table tknd ON j.normalized_app_num = tknd.normalized_app_num
-        LEFT JOIN t_dsgnt_art td ON j.normalized_app_num = td.normalized_app_num
-        LEFT JOIN t_sample ts ON j.normalized_app_num = ts.normalized_app_num
-        WHERE j.normalized_app_num IN ({placeholders})
-        GROUP BY j.normalized_app_num
-    """
+# Convert user input to normalized format
+normalized_app_num = app_num.replace('-', '').replace('商願', '').replace('商標登録', '')
 ```
 
-### Column Name Normalization
-- **Always use `normalized_app_num`** (not `shutugan_no`) for application numbers across all tables
-- **Remove hyphens** from application numbers: `2024-12345` → `202412345`
-- **Use COALESCE** for trademark text priority: `standard_char_t` → `indct_use_t` → `search_use_t`
-- **Consistent naming**: All enhanced tables use `normalized_app_num`
-
-### Rights Holder Information Pattern
-```sql
--- CORRECT: Must use reg_mapping to connect applications to registrations
-SELECT j.normalized_app_num, rp.right_person_name
-FROM jiken_c_t j
-JOIN reg_mapping rm ON j.normalized_app_num = rm.app_num  
-JOIN right_person_art_t rp ON rm.reg_num = rp.reg_num
-
--- INCORRECT: Direct join will fail (different number spaces)
-SELECT j.normalized_app_num, rp.right_person_name
-FROM jiken_c_t j
-JOIN right_person_art_t rp ON j.normalized_app_num = rp.normalized_app_num
-```
-
-### Similar Group Code Search Pattern
-```sql
--- Search for similar group codes (e.g., 11C01)
-SELECT tknd.normalized_app_num, tknd.smlr_dsgn_group_cd
-FROM t_knd_info_art_table tknd
-JOIN jiken_c_t j ON tknd.normalized_app_num = j.normalized_app_num
-WHERE tknd.smlr_dsgn_group_cd LIKE '%11C01%'
-```
-
-### TM-SONAR Text Normalization System
+### Text Processing
+Use `TextNormalizer` for TM-SONAR compliant text processing:
 ```python
-# Use TextNormalizer for advanced trademark text processing
 from text_normalizer import TextNormalizer
 
 normalizer = TextNormalizer()
-
-# Basic normalization (P1 level)
-basic_result = normalizer.normalize_basic("あっぷる・Ⅲ世代")  # → "アップル・3世代"
-
-# Pronunciation matching (称呼同一判定)
-pronunciation_result = normalizer.normalize_pronunciation("チヂミ")  # → "チジミ" 
-
-# TM-SONAR trademark normalization
-trademark_result = normalizer.normalize_trademark("α-ブロッカー▲")  # → "A-ブロッカ-"
-
-# Multiple search terms and wildcards
-search_terms = normalizer.normalize_search_terms("ソニー,パナソニック", "trademark")
+# P1 basic normalization
+normalized_text = normalizer.normalize_text(text, level='basic')
+# P2 pronunciation matching
+pronunciation = normalizer.normalize_text(text, level='pronunciation')
+# Trademark-specific normalization
+trademark_text = normalizer.normalize_text(text, level='trademark')
 ```
 
-## Current System Status (2025-07-13 - Post Critical Fixes)
+## Application Structure
 
-### Database Optimization Status
-- **Optimized Database**: 22,227 trademark records across 31+ tables with comprehensive indexing
-- **Enhanced Coverage**: 100% basic info, 97.3% trademark text, 100% designated goods, 97.3% pronunciation, 99.8% similar group codes
-- **Performance Improvements**: 43+ indexes, VACUUM optimization complete
-- **System Repairs**: Major data integrity fixes and duplicate elimination completed
-- **Unified Search**: High-performance view with duplicate elimination (fixed 2041x duplication issue)
+### Main Application Files
+- **`app_dynamic_join_claude_optimized.py`** - Production Flask web application
+  - Modern web interface with responsive design
+  - Optimized single-query pattern implementation
+  - Image serving and trademark display features
+  - Pagination and advanced search filters
 
-### Performance Metrics (Post-Critical Fixes)
-- **Duplicate Display Issue**: ✅ **RESOLVED** - Sony search correctly shows 2 results (was showing 4082)
-- **Goods Classification Search**: ✅ **OPTIMIZED** - From timeout to <1 second response
-- **Search Performance**: All search patterns complete in <1 second
-- **Data Quality**: A-grade system with 94/100 overall score
-- **Database Size**: 275MB (optimized and deduplicated)
+### CLI Search Tools
+- **`cli_trademark_search.py`** - High-performance command-line interface
+  - Unified search for domestic and international trademarks
+  - Multiple search types (application number, mark text, goods classes, etc.)
+  - Duplicate elimination and optimized queries
 
-### Available Search Types
-**Fully Functional**:
-- Application number search (`--app-num`)
-- Trademark text search (`--mark-text`)
-- Goods classification search (`--goods-classes`)
-- Similar group code search (`--similar-group-codes`)
-- International trademark search (`--international`, `--intl-reg-num`)
-- Applicant name search (`--applicant-name`)
+### Data Processing Pipeline
+- **`import_tsv_data_fixed.py`** - Handles 77+ different TSV file types
+- **`scripts/import_phase2_international_trademarks.py`** - International trademark data
+- **`build_reg_mapping.py`** - Creates critical mapping between application and registration numbers
 
-**Partially Available**:
-- Rights holder information (registered trademarks only)
-- Trademark images (domestic trademarks only)
-- Pronunciation search (domestic trademarks only)
+### Testing Infrastructure
+- **`comprehensive_search_test.py`** - Tests various search patterns and scenarios
+- **`test_results/`** - Directory containing test execution results in JSON format
+- **`autonomous_system_launcher.py`** - Unified testing and operation launcher
 
-## Development Workflow
+## Web Application Components
 
-### Before Starting Development
-1. **Verify Database State**: Check if Sony search works: `python3 cli_trademark_search.py --mark-text "ソニー" --limit 1`
-2. **Check Critical Tables**: Ensure `reg_mapping`, `applicant_mapping` exist
-3. **Review Recent Fixes**: Check `SYSTEM_IMPROVEMENTS_SUMMARY.md` for latest changes
+### Templates (Jinja2)
+Located in `templates/` directory:
+- **`base_enhanced.html`** - Enhanced template with modern styling
+- **`index_enhanced.html`** - Enhanced search interface
+- **`detail.html`** - Individual trademark details
 
-### When Debugging Search Issues
-1. **Unexpected Results**: First run `python3 comprehensive_search_test.py` to verify system status
-2. **Duplicate Results**: Apply fixed unified view with `scripts/create_unified_trademark_view_fixed.sql`
-3. **Performance Issues**: Check `python3 analyze_coverage_gaps.py` for data quality analysis  
-4. **Data Inconsistency**: Run `python3 analyze_current_state.py` for comprehensive diagnostics
-5. **Column Errors**: Always use `normalized_app_num` and follow single-query optimization patterns
+### Static Files
+- **`static/style.css`** - Modern CSS with gradient backgrounds, card designs, and responsive layout
+- Color scheme: Indigo/purple gradients with professional styling
+- Mobile-responsive design with CSS Grid/Flexbox
 
-### When Adding New Features
-1. Use the single-query optimization pattern to avoid N+1 problems
-2. Test with CLI tools before web implementation
-3. Consider data coverage limitations when designing UI
-4. Use appropriate JOINs via `reg_mapping` for rights holder data
-5. Leverage `TextNormalizer` for TM-SONAR compliant text processing
+## Database Schema Patterns
 
-## Known Issues and Limitations
+### Core Tables Structure
+```sql
+-- Core trademark case information
+CREATE TABLE jiken_c_t (
+    app_num TEXT PRIMARY KEY,
+    app_date TEXT,
+    app_name TEXT,
+    -- ... additional fields
+);
 
-### Resolved Issues (2025-07-13)
-- ✅ **Duplicate Display Problem**: Fixed 2041x duplication in unified search results  
-- ✅ **Sony Search**: Fixed from 0 results to 2 accurate results (data integrity repair)
-- ✅ **Goods Classification Search**: Optimized from timeout to <1s response time
-- ✅ **Database Inconsistency**: Added 5,539 missing records, resolved all orphaned data
-- ✅ **Search Performance**: All search patterns now complete in <1 second
+-- Trademark text data
+CREATE TABLE standard_char_t_art (
+    app_num TEXT,
+    standard_char_name TEXT,
+    -- ... additional fields
+);
 
-### Current System Status
-**A-Grade System (94/100 overall score) - Ready for Production Use**
+-- Goods classification
+CREATE TABLE goods_class_art (
+    app_num TEXT,
+    goods_class_no TEXT,
+    goods_name TEXT,
+    -- ... additional fields
+);
+```
 
-The system has achieved commercial-grade stability with:
-- **Data Quality**: 97.3% coverage for core information
-- **Performance**: Sub-second response for all search types  
-- **Reliability**: 100% search success rate across all test patterns
-- **Data Integrity**: Zero orphaned records, complete consistency
+### Performance Indexes
+The system uses 43+ optimized indexes. Key patterns:
+```sql
+-- Composite indexes for common search patterns
+CREATE INDEX idx_jiken_app_name ON jiken_c_t(app_name);
+CREATE INDEX idx_standard_char_name ON standard_char_t_art(standard_char_name);
+CREATE INDEX idx_goods_class_composite ON goods_class_art(goods_class_no, goods_name);
+```
 
-### Minor Enhancement Opportunities
-- **Applicant Master Data**: Import remaining applicant name mappings
-- **Unified View Performance**: Optimize for very large result sets (>100k records)
-- **International Text Normalization**: TM-SONAR support for international trademarks
+## Data Quality and Integrity
 
-### Data Coverage by Year
-- **1997-2002**: Basic data only (limited applicant/goods information)
-- **2003+**: Comprehensive data coverage
-- **2020+**: Full feature coverage including enhanced data
+### Current System Status (A-Grade)
+- **Database size**: 275MB (optimized and deduplicated)
+- **Search performance**: All patterns complete in <1 second
+- **Data quality**: 94/100 overall score with 97.3% coverage
+- **Duplicate resolution**: Fixed 2041x duplication issues
 
-## Dependencies
-- Python 3.x with sqlite3 (built-in)
-- Flask (for web interface): `pip install flask`
-- Standard library modules: csv, pathlib, re, logging, argparse, json
-- No pandas dependency (optimized for pure Python)
+### Critical Data Relationships
+- `jiken_c_t` (core cases) ↔ `standard_char_t_art` (text data)
+- `jiken_c_t` ↔ `goods_class_art` (goods classification)
+- `jiken_c_t` ↔ `reg_mapping` (application to registration mapping)
+- `t_sample` contains Base64 encoded trademark images
+
+## Development Workflow (TMCloud-Specific)
+
+### Branch Strategy
+- **Branch naming**: `feat/search-<feature>`, `fix/db-<issue>`, `chore/optimize-<component>`
+- **TMCloud-specific prefixes**: `data/`, `search/`, `web/`, `cli/`, `test/`
+
+### Before Development
+1. **Verify database state**: `python3 autonomous_system_launcher.py status`
+2. **Check recent test results**: Review `test_results/` directory
+3. **Understand current data quality**: Check improvement history
+4. **Create feature branch**: Follow conventional naming with TMCloud prefixes
+
+### During Development
+1. **Use single-query optimization patterns** (critical for performance)
+2. **Follow normalized application number format** (`normalized_app_num`)
+3. **Leverage TextNormalizer for text processing** (TM-SONAR compliance)
+4. **Test with CLI tools before web implementation**
+5. **Keep commits ≤ 200 LOC** for reviewability
+6. **Write tests for search functions** with expected result counts
+
+### After Development
+1. **Run comprehensive tests**: `python3 comprehensive_search_test.py`
+2. **Verify performance**: `python3 performance_benchmark.py`
+3. **Check data quality score**: Must maintain ≥ 90/100
+4. **Update documentation**: Maintain improvement history
+5. **CI must be green** before requesting review
+
+### Commit Message Format (TMCloud)
+```
+type(scope): brief summary
+
+Examples:
+feat(search): add fuzzy matching for trademark names
+fix(db): resolve duplicate entries in Sony search results
+perf(cli): optimize goods classification query performance
+test(web): add integration tests for image serving
+
+Longer description if required.
+Fixes #123
+```
+
+## Autonomous System Features
+
+### Self-Improvement System
+- **`autonomous_system_launcher.py`** - Main system launcher
+- **`analyze_current_state.py`** - System diagnostics and analysis
+- **`analyze_coverage_gaps.py`** - Data quality assessment
+- **`performance_benchmark.py`** - Performance measurement and optimization
+
+### Autonomous Operations
+- Status monitoring and reporting
+- Automated search testing
+- Performance optimization
+- Data integrity checks
+- Continuous improvement cycles
+
+## Recent Critical Fixes (2025-07-13)
+
+- ✅ Resolved duplicate display issue (2041x improvement)
+- ✅ Fixed Sony search from 0→2 accurate results
+- ✅ Optimized goods classification search (timeout→<1s)
+- ✅ Added 5,539 missing jiken_c_t records
+- ✅ Comprehensive index optimization
+
+## Documentation
+
+### Comprehensive Documentation Available
+- **`CLAUDE_BASE.md`** - Base development principles and workflow
+- **`DATABASE_DETAILED_ANALYSIS.md`** - Detailed database analysis
+- **`SYSTEM_IMPROVEMENTS_SUMMARY.md`** - Recent improvements and fixes
+- **`AUTONOMOUS_SYSTEM_README.md`** - Autonomous system guide
+- **`WEEKLY_UPDATE_GUIDE.md`** - Data maintenance procedures
+
+### Search Capabilities
+- ✅ Application number search
+- ✅ Trademark text search (Japanese/English/symbols)
+- ✅ Goods classification search
+- ✅ Similar group code search
+- ✅ International trademark search
+- ✅ Applicant name search
+- ✅ Rights holder information (registered trademarks)
+- ✅ Trademark images (domestic trademarks)
+- ✅ Pronunciation search
+
+## TMCloud-Specific Guidelines
+
+### Tech Stack
+| Component | Technology | Configuration |
+|-----------|------------|---------------|
+| Language | Python 3.12+ | Type hints required |
+| Database | SQLite | 43+ optimized indexes |
+| Web Framework | Flask | Production server on port 5002 |
+| Testing | pytest | Coverage ≥ 90% + performance tests |
+| Text Processing | Custom TextNormalizer | TM-SONAR compliance |
+
+### Security & Compliance
+- **Never commit sensitive data**: TSV files contain patent office data
+- **Validate search inputs**: Prevent SQL injection in dynamic queries
+- **Image serving**: Secure Base64 decoding for trademark images
+- **Performance monitoring**: Alert if search queries > 1 second
+- **Data integrity**: Run `pip-audit` weekly for dependencies
+
+### Testing Strategy (TMCloud-Specific)
+```bash
+# Unit tests for search functions
+pytest tests/test_search_functions.py -v
+
+# Integration tests with actual database
+pytest tests/test_integration.py -v
+
+# Performance regression tests
+python3 performance_benchmark.py
+
+# Comprehensive search validation
+python3 comprehensive_search_test.py
+
+# Coverage report (target ≥ 90%)
+pytest --cov=. --cov-report=html
+```
+
+### Deployment & Operations
+```bash
+# Database health check
+python3 autonomous_system_launcher.py status
+
+# Staging deployment (local testing)
+python3 app_dynamic_join_claude_optimized.py
+
+# Performance baseline
+python3 performance_benchmark.py > baseline_$(date +%Y%m%d).txt
+
+# Weekly data updates
+python3 weekly_data_updater.py
+```
+
+### TMCloud Autonomy Escalation Matrix
+| Trigger | Required Action |
+|---------|----------------|
+| **Search timeout > 1s** | Analyze query, optimize indexes, request approval for schema changes |
+| **Data quality < 90** | Run diagnostics, identify gaps, create improvement plan |
+| **Database corruption** | Pause operations, request explicit `CONFIRM: RESTORE` token |
+| **TSV import failure** | Backup current state, analyze failed files, escalate if > 5% loss |
+
+### Temporary Scripts Policy
+- **Store in**: `scripts/tmp/` directory
+- **Naming**: `tmp_YYYYMMDD_purpose.py` format
+- **Cleanup**: Auto-delete after 30 days via CI check
+- **Examples**: `tmp_20250714_sony_duplicate_fix.py`
+
+## File Structure Notes
+
+### Data Organization
+- **`tsv_data/tsv/`** - 77+ TSV files from Japan Patent Office (NEVER commit to repo)
+- **`csvs/`** - 193+ CSV specification files documenting data formats
+- **`images/final_complete/`** - 6,488+ trademark images (JPG format)
+- **`decoded_tsvs/`** - Processed TSV files in readable format
+- **`scripts/tmp/`** - Temporary experimental scripts (auto-cleaned)
+
+### Configuration
+- **`create_schema.sql`** - Core database schema with 31+ tables
+- **`scripts/phase2_schema.sql`** - International trademark schema extension
+- **`scripts/create_unified_trademark_view.sql`** - Unified search view creation
+- **`test_results/`** - Automated test execution results (JSON format)
+
+### Documentation Hierarchy
+1. **`CLAUDE.md`** (this file) - Primary development guide
+2. **`CLAUDE_BASE.md`** - Universal development principles
+3. **`DATABASE_DETAILED_ANALYSIS.md`** - Database architecture details
+4. **`SYSTEM_IMPROVEMENTS_SUMMARY.md`** - Recent fixes and optimizations
+5. **`AUTONOMOUS_SYSTEM_README.md`** - Self-improvement system guide

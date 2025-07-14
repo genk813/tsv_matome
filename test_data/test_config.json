@@ -1,0 +1,10 @@
+{
+  "test_database": "test_data/test_output.db",
+  "test_images": "test_data/test_images",
+  "description": "Lightweight test data for GitHub Actions",
+  "created": "2025-01-14",
+  "data_sampling": {
+    "database": "10% sample (max 1000 rows per table)",
+    "images": "50 random samples"
+  }
+}

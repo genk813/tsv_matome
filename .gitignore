@@ -68,3 +68,13 @@ weekly_data/
 # Search results
 search_results/
 *.html
+
+# Production data (DO NOT COMMIT)
+output_backup.db
+images/final_complete/
+tsv_data/tsv/
+decoded_tsvs/
+
+# Test data is OK to commit
+!test_data/
+!test_data/**
