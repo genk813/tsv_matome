@@ -4,6 +4,8 @@ output.db-*
 *.db
 *.sqlite
 *.sqlite3
+test_output.db
+nonexistent.db
 
 # Image files (large binary files)
 images/
