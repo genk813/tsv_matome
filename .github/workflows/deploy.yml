@@ -83,8 +83,7 @@ jobs:
         run: |
           git archive --format=tar --output=tmcloud-production.tar HEAD
           tar --append --file=tmcloud-production.tar sbom.json
-          gzip -f tmcloud-production.tar  # → tmcloud-production.tar.gz
-          mv tmcloud-production.tar.gz tmcloud-production.tar.gz
+          gzip -f tmcloud-production.tar   # → tmcloud-production.tar.gz
 
       - name: Create Release
         uses: actions/create-release@v1
@@ -95,8 +94,8 @@ jobs:
           release_name: TMCloud ${{ github.ref }}
           body: |
             See changelog for details.
-        draft: false
-        prerelease: false
+          draft: false
+          prerelease: false
 
       - name: Upload production artifact
         uses: actions/upload-artifact@v4
