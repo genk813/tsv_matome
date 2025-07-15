@@ -1,50 +1,68 @@
-name: TMCloud CI
+name: CI
 
-  on:
-    push:
-      branches: [ main, develop ]
-    pull_request:
-      branches: [ main ]
+# ────── いつ動かすか ──────
+on:
+  push:
+    branches: [ "main", "develop" ]   # 必要なら調整
+  pull_request:
+    branches: [ "main" ]
 
-  jobs:
-    basic-check:
-      runs-on: ubuntu-latest
+# ────── 権限（基本は read で OK） ──────
+permissions:
+  contents: read
 
-      steps:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリをチェックアウト
       - uses: actions/checkout@v4
 
+      # Python をセットアップ（バージョンは好みで）
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: "3.11"
+          cache: "pip"          # requirements.txt がある場合は pip キャッシュ
 
-      - name: Install basic dependencies
+      # 依存パッケージをインストール
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install Flask click
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Basic syntax check
-        run: |
-          python -m py_compile *.py
-          echo "✅ Python syntax check passed"
+      # 単体テストを実行（pytest 前提。なければ消す）
+      - name: Run tests
+        run: pytest -q
 
-      - name: Test Flask import
-        run: |
-          python -c "import flask; print('✅ Flask imported successfully')"
+      # スクリプトを回して SQLite を生成したい場合はここで
+      # - name: Build DB index
+      #   run: python scripts/build_index.py
 
-      - name: Create test database
-        run: |
-          python scripts/create_test_database.py
-          echo "✅ Test database created"
-
-      - name: Basic database check
-        run: |
-          python -c "
-          import sqlite3
-          conn = sqlite3.connect('test_data/test_ci.db')
-          cursor = conn.cursor()
-          cursor.execute('SELECT COUNT(*) FROM jiken_c_t')
-          count = cursor.fetchone()[0]
-          print(f'✅ Database contains {count} test records')
-          conn.close()
-          "
+  # ────── 追加で Docker イメージをビルド & プッシュしたい場合 ──────
+  # build-and-push:
+  #   needs: test          # テストが通ったら続行
+  #   runs-on: ubuntu-latest
+  #   if: github.ref_name == 'main'      # main ブランチ限定
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
+  #
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+  #
+  #     - name: Login to Docker Hub
+  #       uses: docker/login-action@v3
+  #       with:
+  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #
+  #     - name: Build and push image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         push: true
+  #         tags: ${{ secrets.DOCKERHUB_USERNAME }}/trademark-db:${{ github.sha }}
