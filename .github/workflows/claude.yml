@@ -1,23 +1,31 @@
+name: Claude Assistant
+
 on:
   issue_comment:
     types: [created]
 
 permissions:
-  id-token: write       # OIDC 用。必須
   contents: write
+  issues:   write
   pull-requests: write
-  issues: write
-  actions: read      # ★これを足す
+  actions: read
+  id-token: write        # OIDC 用（必要なら残す）
 
 jobs:
   claude:
+    if: contains(github.event.comment.body, '@claude')
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: anthropics/claude-code-action@v0
+
+      - name: Run Claude
+        uses: anthropics/claude-code-action@v0.0.32   # バージョン固定
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           trigger_phrase: "@claude"
           timeout_minutes: 30
+          claude_env: |
+            DB_PATH: test_output.db
