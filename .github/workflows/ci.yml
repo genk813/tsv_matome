@@ -1,51 +1,47 @@
-name: Claude Assistant
+name: CI
 
+# ────── トリガ ──────
 on:
-  issue_comment:
-    types: [created]         # PR でも Issue でもコメント作成時
-  pull_request_review_comment:
-    types: [created]
-  pull_request_review:
-    types: [submitted]
-  issues:
-    types: [opened, assigned]
+  push:
+    branches: [ "main", "develop" ]   # 必要なら変更
+  pull_request:
+    branches: [ "main", "develop" ]
+
+permissions:
+  contents: read            # ソース取得
+  actions: read             # （任意）Claude などがログを読む用
 
 jobs:
-  claude:
-    # 「@claude」が含まれる時だけ実行
-    if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
-
+  test:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      issues:   read
-      pull-requests: read
-      actions: read        # ← CI ログ参照したいなら
-      id-token: write      # ← OIDC 連携用（不要なら削除可）
+    env:
+      DB_PATH: test_output.db   # コード側が env 参照していればこれで切替
 
     steps:
+      # ① リポジトリ取得（LFS 有効化も忘れず）
       - uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Run Claude
-        uses: anthropics/claude-code-action@v0.0.32   # 固定推奨
+      # ② CI 内で test_output.db → output.db にコピー（コード修正不要）
+      - name: Use test database for CI
+        run: |
+          if [ -f test_output.db ]; then cp test_output.db output.db; fi
+
+      # ③ Python セットアップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          # どちらか一方を設定
-          # anthropic_api_key:        ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          python-version: "3.11"
+          cache: "pip"
 
-          # 追加で必要なら
-          additional_permissions: |
-            actions: read
+      # ④ 依存パッケージ
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-          # Claude に環境変数を渡して test DB を使う例
-          claude_env: |
-            DB_PATH: test_output.db
-
-          timeout_minutes: "60"
+      # ⑤ pytest（tests/ が無ければスキップ）
+      - name: Run tests
+        if: ${{ hashFiles('tests/**') != '' }}
+        run: pytest -q
