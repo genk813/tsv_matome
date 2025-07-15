@@ -1,4 +1,4 @@
-name: Claude Assistant
+name: Claude Auto Executor
 
 on:
   issue_comment:
@@ -6,26 +6,23 @@ on:
 
 permissions:
   contents: write
-  issues:   write
+  issues: write
   pull-requests: write
-  actions: read
   id-token: write
+  actions: read
 
 jobs:
   claude:
-    if: contains(github.event.comment.body, '@claude')
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Run Claude
-        uses: anthropics/claude-code-action@v0.0.32
+      - name: Claude Code Action
+        uses: anthropics/claude-code-action@v0
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           trigger_phrase: "@claude"
           timeout_minutes: 30
-          claude_env: |
-            DB_PATH: test_output.db
