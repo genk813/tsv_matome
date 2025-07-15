@@ -45,3 +45,7 @@ jobs:
       - name: Run tests
         if: ${{ hashFiles('tests/**') != '' }}
         run: pytest -q
+
+      - name: Quick sanity check
+        run: python cli_trademark_search.py --limit 1 || true
+
