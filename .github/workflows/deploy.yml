@@ -30,25 +30,21 @@ jobs:
       - name: Create test database
         run: python scripts/create_test_database.py
 
-      - name: Run smoke tests
+      - name: Smoke tests
         run: |
           python - <<'PY'
-          import sqlite3, time, subprocess, os, signal, sys
+          import sqlite3, subprocess, os, signal, time, urllib.request
           conn = sqlite3.connect('test_data/test_ci.db')
           assert conn.execute('SELECT COUNT(*) FROM jiken_c_t').fetchone()[0] > 0
           conn.close()
-          p = subprocess.Popen([sys.executable, 'app_dynamic_join_claude_optimized.py'])
+          p = subprocess.Popen(['python','app_dynamic_join_claude_optimized.py'])
           time.sleep(10)
-          import urllib.request, urllib.error
           urllib.request.urlopen('http://localhost:5002/')
           os.kill(p.pid, signal.SIGTERM)
-          print('✓ Smoke tests passed')
           PY
 
-      - name: Create staging artifact
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          tar --exclude='.git' -czf tmcloud-staging.tar.gz $(git ls-files)
+      - name: Package staging artifact
+        run: git archive --format=tar.gz --output=tmcloud-staging.tar.gz HEAD
 
       - name: Upload staging artifact
         uses: actions/upload-artifact@v4
@@ -83,10 +79,12 @@ jobs:
       - name: Generate SBOM
         run: cyclonedx-py -r requirements.txt -o sbom.json
 
-      - name: Create production artifact
+      - name: Package production artifact (+SBOM)
         run: |
-          cd "$GITHUB_WORKSPACE"
-          tar --exclude='.git' -czf tmcloud-production.tar.gz $(git ls-files) sbom.json
+          git archive --format=tar --output=tmcloud-production.tar HEAD
+          tar --append --file=tmcloud-production.tar sbom.json
+          gzip -f tmcloud-production.tar  # → tmcloud-production.tar.gz
+          mv tmcloud-production.tar.gz tmcloud-production.tar.gz
 
       - name: Create Release
         uses: actions/create-release@v1
@@ -94,15 +92,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: TMCloud Release ${{ github.ref }}
+          release_name: TMCloud ${{ github.ref }}
           body: |
-            TMCloud Release ${{ github.ref }}
-
-            ## Deployment
-            1. Download the **tmcloud-production.tar.gz** artifact
-            2. Extract to your server
-            3. `pip install -r requirements.txt`
-            4. `python app_dynamic_join_claude_optimized.py`
+            See changelog for details.
         draft: false
         prerelease: false
 
