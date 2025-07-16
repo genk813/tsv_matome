@@ -80,3 +80,6 @@ decoded_tsvs/
 # Test data is OK to commit
 !test_data/
 !test_data/**
+
+# Claude settings
+.claude/settings.local.json

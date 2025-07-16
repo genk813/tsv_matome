@@ -1,0 +1,26 @@
+{
+"model": "claude-3-5-sonnet-20241022",
+"permissions": {
+ "defaultMode": "acceptEdits",
+ "allow": [
+   "Edit(**/*.py)",
+   "Write(requirements.txt)",
+   "Bash(pip install *)",
+   "Bash(flask *)",
+   "Bash(git add:*)",
+   "Bash(git commit:*)"
+ ],
+ "deny": [
+   "Bash(rm -rf *)",
+   "WebFetch(http://*)"
+ ]
+},
+"env": {
+ "FLASK_ENV": "development"
+},
+"hooks": {
+ "PostToolUse": {
+   "Edit(**/*.py)": "black {{file}} --quiet"
+ }
+}
+}
