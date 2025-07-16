@@ -1,0 +1,142 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tmcloud"
+version = "1.0.0"
+description = "TMCloud - Japanese Trademark Search System"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "Flask>=3.1.1",
+    "Jinja2>=3.1.0",
+    "Werkzeug>=3.1.0",
+    "itsdangerous>=2.2.0",
+    "click>=8.1.0",
+    "python-dateutil>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-cov>=6.2.0",
+    "pytest-timeout>=2.4.0",
+    "ruff>=0.12.0",
+    "black>=25.1.0",
+    "isort>=6.0.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    ".git",
+    ".pytest_cache",
+    "__pycache__",
+    "*.egg-info",
+    "build",
+    "dist",
+    "scripts/tmp",
+    "tsv_data",
+    "images",
+    "test_results",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "N",  # pep8-naming
+    "UP", # pyupgrade
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "PIE", # flake8-pie
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B904",  # raise-without-from-inside-except
+    "N802",  # function-name-should-be-lowercase (for Japanese function names)
+    "N806",  # variable-in-function-should-be-lowercase (for Japanese variables)
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+skip-string-normalization = true
+exclude = '''
+/(
+    \.git
+  | \.pytest_cache
+  | __pycache__
+  | \.egg-info
+  | build
+  | dist
+  | scripts/tmp
+  | tsv_data
+  | images
+  | test_results
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_glob = [
+    "scripts/tmp/*",
+    "tsv_data/*",
+    "images/*",
+    "test_results/*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "--timeout=300",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+timeout = 300
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    "scripts/tmp/*",
+    "tsv_data/*",
+    "images/*",
+    "test_results/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

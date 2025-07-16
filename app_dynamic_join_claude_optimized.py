@@ -12,14 +12,14 @@ from typing import List, Dict, Any, Optional, Tuple
 
 # --- 設定クラス ---
 class Config:
-    DB_PATH = os.environ.get('DB_PATH', Path(__file__).parent.resolve() / "output.db")
+    DB_PATH = Path(os.environ.get('DB_PATH', Path(__file__).parent.resolve() / "output.db"))
     PER_PAGE_OPTIONS = [20, 50, 100, 200]
     DEFAULT_PER_PAGE = 200
     SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-here')
     MAX_SEARCH_TERM_LENGTH = 100
     MAX_RESULTS_PER_PAGE = 200
     # 画像関連設定
-    IMAGES_DIR = os.environ.get('IMAGES_DIR', Path(__file__).parent.resolve() / "images" / "final_complete")
+    IMAGES_DIR = Path(os.environ.get('IMAGES_DIR', Path(__file__).parent.resolve() / "images" / "final_complete"))
     SERVE_IMAGES = True
 
 # --- アプリケーション初期化 ---

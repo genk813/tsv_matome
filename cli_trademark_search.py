@@ -22,7 +22,7 @@ class TrademarkSearchCLI:
     """商標検索CLI"""
     
     def __init__(self, db_path: str = None):
-        self.db_path = db_path or DB_PATH
+        self.db_path = Path(db_path) if db_path else DB_PATH
         self.conn = None
         
     def get_db_connection(self):
