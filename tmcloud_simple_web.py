@@ -329,6 +329,9 @@ HTML_TEMPLATE = """
                 if (info.final_disposition_type) {
                     html += `<div class="field"><span class="field-label">最終処分コード:</span> ${esc(info.final_disposition_type)}</div>`;
                 }
+                if (info.final_disposition_article) {
+                    html += `<div class="field"><span class="field-label">最終処分記事:</span> ${esc(info.final_disposition_article)}</div>`;
+                }
                 if (info.final_disposition_date) {
                     html += `<div class="field"><span class="field-label">最終処分日:</span> ${esc(info.final_disposition_date)}</div>`;
                 }
@@ -400,36 +403,11 @@ HTML_TEMPLATE = """
                 }
                 
                 // 中間記録を審査・審判・登録に分けて表示
-                if (info.progress_records && info.progress_records.length > 0) {
-                    // 審査・審判・登録の記録を分類
-                    const examRecords = [];      // 審査
-                    const trialRecords = [];     // 審判
-                    const registrationRecords = []; // 登録
-                    
-                    info.progress_records.forEach(record => {
-                        if (record && record.includes(':')) {
-                            const [code, date] = record.split(':');
-                            // コードの形式で正確に判定
-                            const firstChar = code.charAt(0).toUpperCase();
-                            
-                            // R系 = 登録系
-                            if (firstChar === 'R' || firstChar === 'Ｒ') {
-                                registrationRecords.push(record);
-                            }
-                            // 数字で始まる = 審判系
-                            else if (!isNaN(firstChar)) {
-                                trialRecords.push(record);
-                            }
-                            // A系 = 審査系
-                            else if (firstChar === 'A' || firstChar === 'Ａ') {
-                                examRecords.push(record);
-                            }
-                            // その他（IB/MD/AP/M3など） = 審査系として扱う
-                            else {
-                                examRecords.push(record);
-                            }
-                        }
-                    });
+                if (info.progress_records) {
+                    // バックエンドから分類済みのデータを受け取る
+                    const examRecords = info.progress_records.exam || [];
+                    const trialRecords = info.progress_records.trial || [];
+                    const registrationRecords = info.progress_records.registration || [];
                     
                     // 審査中間記録
                     if (examRecords.length > 0) {

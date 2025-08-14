@@ -6225,6 +6225,172 @@ class TMCloudIntegratedSearch:
     "Ｒ９４": "返戻通知（移転）",
 }
 
+    # 審判種別コードマッピング
+    APPEAL_TYPE_MAP = {
+        "01": "拒絶査定不服審判",
+        "02": "補正却下不服審判",
+        "03": "無効審判",
+        "04": "取消審判",
+        "05": "異議申立",
+        "06": "訂正審判",
+        "07": "再審",
+        "11": "判定請求",
+        "21": "異議申立(マドプロ)",
+        "31": "取消審判(マドプロ)",
+        "41": "無効審判(マドプロ)"
+    }
+    
+    # 審判条文コードマッピング（審判条文記事用）
+    APPEAL_ARTICLE_CODE_MAP = {
+        # 商標法に基づく審判条文
+        "44-1": "第44条第1項（拒絶査定不服審判）",
+        "45": "第45条（補正却下不服審判）",
+        "46": "第46条（無効審判）",
+        "46-1": "第46条第1項（無効審判）",
+        "47": "第47条（無効審判の審決確定の効果）",
+        "50": "第50条（不使用取消審判）",
+        "51": "第51条（不正使用取消審判）",
+        "52": "第52条の2（不正使用取消審判）",
+        "53": "第53条（使用権者の不正使用取消審判）",
+        "53-2": "第53条の2（代理人等の不正登録取消審判）",
+        "54": "第54条（審決の効果）",
+        "55-2": "第55条の2（商標登録の取消しの審判）",
+        "55-3": "第55条の3（審決の効果）",
+        "56": "第56条（再審）",
+        "57": "第57条（再審の期間）",
+        "58": "第58条（再審により回復した商標権の効力の制限）",
+        "59": "第59条（審判の規定の準用）",
+        "60": "第60条（審判における費用負担）",
+        "61": "第61条（審判の手続）",
+        "62": "第62条（査定に対する審判）",
+        "63": "第63条（拒絶査定不服審判における特則）",
+        "43-2": "第43条の2（異議申立）",
+        "43-3": "第43条の3（異議申立理由）",
+        "43-4": "第43条の4（異議申立についての審理）",
+        "43-5": "第43条の5（異議申立についての決定）",
+        "43-6": "第43条の6（審判の規定の準用）",
+        "43-7": "第43条の7（異議申立と審判の関係）",
+        "43-8": "第43条の8（審判官の指定）",
+        "43-9": "第43条の9（審理の方式）",
+        "43-10": "第43条の10（異議申立の取下げ）",
+        "43-11": "第43条の11（参加）",
+        "43-12": "第43条の12（証拠調べ）",
+        "43-13": "第43条の13（職権審理）",
+        "43-14": "第43条の14（意見書提出の機会）",
+        "43-15": "第43条の15（決定）"
+    }
+    
+    # 拒絶理由条文コードマッピング（特許庁公式コードINDEX 02110より）
+    REJECTION_REASON_CODE_MAP = {
+        # 商標の拒絶理由条文コード
+        "30": "第3条第1項各号",
+        "31": "第3条第1項各号＋第4条第1項第16号",
+        "32": "第3条第1項柱書",
+        "33": "第3条第1項柱書（定型文付）",
+        "34": "第3条第1項柱書（定型文、但し書付）",
+        "40": "第4条第1項各号（第11号～第13号を除く）",
+        "41": "第4条第1項第11号",
+        "42": "第4条第1項第12号",
+        "43": "第4条第1項第13号",
+        "44": "第4条第1項第11号＋第12号",
+        "45": "第4条第1項第11号＋第13号",
+        "46": "第4条第1項第12号＋第13号",
+        "47": "第4条第1項第11号＋第12号＋第13号",
+        "48": "第4条第3項",
+        "49": "第5条第5項",
+        "50": "第5条第5項＋第53条の2",
+        "51": "第5条第5項（標準文字）",
+        "52": "第5条の2第1項",
+        "53": "第5条の2第1項＋第53条の2",
+        "54": "第8条第1項",
+        "55": "第8条第2項",
+        "56": "第8条第5項",
+        "60": "第6条第3項で準用する第5条第5項",
+        "61": "第6条第1項",
+        "62": "第6条第2項",
+        "63": "第6条第1項＋第6条第2項",
+        "64": "第64条（防護）",
+        "65": "第6条第1項（防護）＋第6条第2項（防護）",
+        "66": "第6条第1項又は第6条第2項",
+        "67": "第6条第1項（防護）",
+        "68": "防護更新",
+        "69": "第6条第2項",
+        "71": "第7条第1項（商標・商品類似）",
+        "72": "第7条の2第1項",
+        "73": "第7条の2第1項（団体）",
+        "74": "第7条の2第1項（団体）（構成員）",
+        "75": "第7条の2第1項（地域団体）",
+        "76": "第7条の2第1項（防護）",
+        "80": "第8条第2項＋第5条第5項",
+        "81": "第8条第2項＋第6条第1項＋第6条第2項",
+        "82": "第4条第1項各号＋第8条第2項＋第5条第5項",
+        "84": "第4条第1項各号＋第8条第5項",
+        "85": "第8条第5項＋第5条第5項",
+        "90": "第65条の4第2項",
+        "91": "第15条の3第2項",
+        "99": "その他",
+        # 互換性のため以前のコードも残す
+        "10": "第3条第1項柱書",
+        "11": "第3条第1項第1号",
+        "12": "第3条第1項第2号",
+        "13": "第3条第1項第3号",
+        "14": "第3条第1項第4号",
+        "15": "第3条第1項第5号",
+        "16": "第3条第1項第6号",
+        "17": "第3条第2項",
+        "20": "第4条第1項第1号",
+        "21": "第4条第1項第2号",
+        "22": "第4条第1項第3号",
+        "23": "第4条第1項第4号",
+        "24": "第4条第1項第5号",
+        "25": "第4条第1項第6号",
+        "26": "第4条第1項第7号",
+        "27": "第4条第1項第8号",
+        "28": "第4条第1項第9号",
+        "29": "第4条第1項第10号",
+        "30": "第4条第1項第11号",
+        "31": "第4条第1項第12号",
+        "32": "第4条第1項第13号",
+        "33": "第4条第1項第14号",
+        "34": "第4条第1項第15号",
+        "35": "第4条第1項第16号",
+        "36": "第4条第1項第17号",
+        "37": "第4条第1項第18号",
+        "38": "第4条第1項第19号",
+        "40": "第5条",
+        "41": "第5条第5項",
+        "45": "第6条第1項",
+        "46": "第6条第2項",
+        "47": "第6条第1項及び第2項",
+        "50": "第7条",
+        "51": "第7条の2",
+        "52": "第8条第1項",
+        "53": "第8条第2項",
+        "54": "第8条第3項",
+        "55": "第8条第5項",
+        "60": "第15条第1号",
+        "61": "第15条第2号",
+        "62": "第15条第3号",
+        "63": "第15条第1号及び第3号",
+        "64": "第15条の3第2項",
+        "65": "第53条の2",
+        "66": "第64条",
+        "70": "第65条第1項",
+        "80": "第68条の16第1項",
+        "81": "第68条の17第1項",
+        "82": "第68条の20第1項",
+        "83": "第68条の20第2項",
+        "84": "第68条の20第3項",
+        "85": "第68条の20第4項",
+        "90": "第68条の28第1項",
+        "91": "第68条の28第2項",
+        "92": "第68条の40第1項",
+        "93": "第68条の40第2項",
+        "94": "第77条第2項において準用する特許法第17条第3項",
+        "95": "第77条第2項において準用する特許法第17条の2第1項",
+        "99": "その他"
+    }
+    
     # C1280+C1380（マドプロ中間コード）統合版マッピング
     # C1280(116個) + C1380(428個)から439個のマッピングを抽出
     # 全角・半角両対応版（計878個）
@@ -8532,20 +8698,32 @@ class TMCloudIntegratedSearch:
     
     # ========== ウィーンコード検索 ==========
     
-    def search_by_vienna_code(self, codes: str, limit: int = 100) -> List[Dict[str, Any]]:
+    def search_by_vienna_code(self, codes: str, limit: int = 100, unified_format: bool = False) -> List[Dict[str, Any]]:
         """ウィーンコード検索（TMSONAR ID:112）
         
         Args:
             codes: ウィーンコード（複数可、スペース/カンマ区切り）
                   階層的前方一致対応（例: '1.3.20' → '1.3.20.01'等を含む）
             limit: 最大取得件数
+            unified_format: 統一フォーマットで返すか
         
         Returns:
             検索結果リスト
         """
         terms = QueryParser.split_terms(codes)
         if not terms or terms == ['?']:
-            return self._get_all_vienna_codes(limit)
+            results = self._get_all_vienna_codes(limit)
+            if unified_format:
+                app_nums = [r['app_num'] for r in results]
+                search_specific = {
+                    r['app_num']: {
+                        'matched_vienna_codes': r.get('vienna_codes'),
+                        'search_term': codes
+                    } for r in results
+                }
+                return self._format_unified_result(app_nums, search_specific)
+            else:
+                return results
         
         results = []
         for term in terms:
@@ -8630,7 +8808,18 @@ class TMCloudIntegratedSearch:
                 seen.add(r['app_num'])
                 unique_results.append(r)
         
-        return unique_results[:limit]
+        # 統一フォーマットで返す
+        if unified_format:
+            app_nums = [r['app_num'] for r in unique_results[:limit]]
+            search_specific = {
+                r['app_num']: {
+                    'matched_vienna_codes': r.get('vienna_codes'),
+                    'search_term': codes
+                } for r in unique_results[:limit]
+            }
+            return self._format_unified_result(app_nums, search_specific)
+        else:
+            return unique_results[:limit]
     
     def _get_all_vienna_codes(self, limit: int) -> List[Dict[str, Any]]:
         """全ウィーンコード取得"""
@@ -10071,7 +10260,17 @@ class TMCloudIntegratedSearch:
                         tci.article3_2_flag,
                         tci.article5_4_flag,
                         tci.exam_type,
-                        tci.decision_type
+                        tci.decision_type,
+                        tci.applicable_law_class,
+                        -- 商標タイプ判定用フラグ
+                        tci.standard_char_exist,
+                        tci.special_mark_exist,
+                        tci.color_exist,
+                        -- 補助情報
+                        tci.defensive_num,
+                        tbi.prior_app_right_occr_date,
+                        tci.renewal_reg_num,
+                        tci.renewal_defensive_num
                     FROM trademark_case_info tci
                     LEFT JOIN image_data ti ON tci.app_num = ti.app_num
                     LEFT JOIN trademark_display td ON tci.app_num = td.app_num
@@ -10162,6 +10361,36 @@ class TMCloudIntegratedSearch:
                     FROM trademark_similar_group_codes
                     WHERE app_num IN ({placeholders})
                 ),
+                vienna_data AS (
+                    SELECT 
+                        app_num,
+                        GROUP_CONCAT(DISTINCT 
+                            large_class || '.' || mid_class || '.' || 
+                            small_class || '.' || complement_sub_class
+                        ) as vienna_codes
+                    FROM trademark_vienna_codes
+                    WHERE app_num IN ({placeholders})
+                    GROUP BY app_num
+                ),
+                rejection_data AS (
+                    SELECT 
+                        app_num,
+                        GROUP_CONCAT(DISTINCT rejection_reason_code) as rejection_codes,
+                        MAX(dispatch_date) as latest_rejection_date
+                    FROM trademark_draft_records
+                    WHERE app_num IN ({placeholders})
+                    AND rejection_reason_code IS NOT NULL
+                    AND rejection_reason_code != ''
+                    GROUP BY app_num
+                ),
+                detail_desc_data AS (
+                    SELECT 
+                        app_num,
+                        GROUP_CONCAT(detailed_description, ' ') as detailed_description
+                    FROM trademark_detailed_descriptions
+                    WHERE app_num IN ({placeholders})
+                    GROUP BY app_num
+                ),
                 appeal_data AS (
                     SELECT 
                         app_num,
@@ -10205,6 +10434,10 @@ class TMCloudIntegratedSearch:
                     gsd.goods_services_name,
                     sgd.class_num as sg_class_num,
                     sgd.similar_group_codes,
+                    vd.vienna_codes,
+                    rd.rejection_codes,
+                    rd.latest_rejection_date,
+                    ddd.detailed_description,
                     apd.appeal_nums,
                     apd.appeal_types,
                     prd.progress_records
@@ -10215,13 +10448,16 @@ class TMCloudIntegratedSearch:
                 LEFT JOIN classes_data cd ON bd.app_num = cd.app_num
                 LEFT JOIN goods_services_data gsd ON bd.app_num = gsd.app_num
                 LEFT JOIN similar_groups_data sgd ON bd.app_num = sgd.app_num
+                LEFT JOIN vienna_data vd ON bd.app_num = vd.app_num
+                LEFT JOIN rejection_data rd ON bd.app_num = rd.app_num
+                LEFT JOIN detail_desc_data ddd ON bd.app_num = ddd.app_num
                 LEFT JOIN appeal_data apd ON bd.app_num = apd.app_num
                 LEFT JOIN progress_data prd ON bd.app_num = prd.app_num
                 ORDER BY bd.app_date DESC
             """
             
-            # パラメータを11回繰り返す（各サブクエリで使用 - progress_dataで2回使用）
-            params = batch_app_nums * 11
+            # パラメータを14回繰り返す（各サブクエリで使用 - progress_dataで2回使用）
+            params = batch_app_nums * 14
             cursor.execute(query, params)
             
             # 結果を出願番号ごとにグループ化
@@ -10245,9 +10481,15 @@ class TMCloudIntegratedSearch:
                         'classes': row['classes'].split(',') if row['classes'] else [],
                         'goods_services': {},
                         'similar_groups': {},
+                        'vienna_codes': row['vienna_codes'].split(',') if row['vienna_codes'] else [],
+                        # 拒絶理由情報を追加
+                        'rejection_codes': self._format_rejection_codes(row['rejection_codes']),
+                        'latest_rejection_date': row['latest_rejection_date'],
                         # ステータス情報を追加（コードを日本語に変換）
                         'final_disposition_type': self._convert_code_to_name(row['final_disposition_type'], 'final_disposition'),
                         'final_disposition_date': row['final_disposition_date'],
+                        # 最終処分記事（日本語変換）
+                        'final_disposition_article': self._format_final_disposition(row['final_disposition_type']),
                         # 公報情報を追加
                         'reg_article_gazette_date': row['reg_article_gazette_date'],
                         'pub_article_gazette_date': row['pub_article_gazette_date'],
@@ -10265,9 +10507,18 @@ class TMCloudIntegratedSearch:
                         'article5_4_flag': row['article5_4_flag'],
                         'exam_type': self._convert_code_to_name(row['exam_type'], 'exam_type'),
                         'decision_type': self._convert_code_to_name(row['decision_type'], 'decision_type'),
+                        'applicable_law_class': self._convert_code_to_name(row['applicable_law_class'], 'international_class_version'),
+                        # 商標タイプ
+                        'trademark_type': self._determine_trademark_type(row),
+                        # 補助情報
+                        'defensive_num': row['defensive_num'],
+                        'prior_app_right_occr_dt': row['prior_app_right_occr_date'],
+                        'renewal_reg_num': row['renewal_reg_num'],
+                        'renewal_defensive_num': row['renewal_defensive_num'],
+                        'detailed_description': row['detailed_description'],
                         # 審判情報
                         'appeal_nums': row['appeal_nums'].split(',') if row['appeal_nums'] else [],
-                        'appeal_types': row['appeal_types'].split(',') if row['appeal_types'] else [],
+                        'appeal_types': self._format_appeal_types(row['appeal_types']),
                         # 中間記録（コードをマッピングして表示）
                         'progress_records': self._format_progress_records(row['progress_records'])
                     }
@@ -10290,12 +10541,76 @@ class TMCloudIntegratedSearch:
         
         return results
     
-    def _format_progress_records(self, records_str: str) -> List[str]:
-        """中間記録コードを日本語に変換して整形"""
-        if not records_str:
+    def _format_rejection_codes(self, codes_str: str) -> List[str]:
+        """拒絶理由コードを条文記事に変換"""
+        if not codes_str:
             return []
         
-        formatted_records = []
+        formatted_codes = []
+        for code in codes_str.split(','):
+            code = code.strip()
+            if code:
+                # コードを条文記事に変換
+                article = self.REJECTION_REASON_CODE_MAP.get(code)
+                if article:
+                    formatted_codes.append(article)
+                else:
+                    # マッピングがない場合はコードをそのまま表示
+                    formatted_codes.append(code)
+        
+        return formatted_codes
+    
+    def _format_appeal_types(self, types_str: str) -> List[str]:
+        """審判種別コードを日本語に変換"""
+        if not types_str:
+            return []
+        
+        formatted_types = []
+        for type_code in types_str.split(','):
+            type_code = type_code.strip()
+            if type_code:
+                # コードを日本語に変換
+                type_name = self.APPEAL_TYPE_MAP.get(type_code, type_code)
+                formatted_types.append(type_name)
+        
+        return formatted_types
+    
+    def _format_final_disposition(self, code: str) -> str:
+        """最終処分コードを日本語の記事に変換"""
+        if not code:
+            return ""
+        
+        # FINAL_DISPOSITION_CODESを使って変換
+        return self.FINAL_DISPOSITION_CODES.get(code, code)
+    
+    def _format_appeal_article_codes(self, codes_str: str) -> List[str]:
+        """審判条文コードを日本語の条文記事に変換"""
+        if not codes_str:
+            return []
+        
+        formatted_codes = []
+        for code in codes_str.split(','):
+            code = code.strip()
+            if code:
+                # コードを条文記事に変換
+                article = self.APPEAL_ARTICLE_CODE_MAP.get(code)
+                if article:
+                    formatted_codes.append(article)
+                else:
+                    # マッピングがない場合はコードをそのまま表示
+                    formatted_codes.append(f"審判条文{code}")
+        
+        return formatted_codes
+    
+    def _format_progress_records(self, records_str: str) -> Dict[str, List[str]]:
+        """中間記録コードを日本語に変換して分類して返す"""
+        if not records_str:
+            return {'exam': [], 'trial': [], 'registration': []}
+        
+        exam_records = []      # 審査中間記録
+        trial_records = []     # 審判中間記録
+        registration_records = [] # 登録中間記録
+        
         for record in records_str.split('|'):
             if ':' in record:
                 code, date = record.split(':', 1)
@@ -10329,11 +10644,58 @@ class TMCloudIntegratedSearch:
                     formatted_date = f"{date[:4]}/{date[4:6]}/{date[6:]}"
                 else:
                     formatted_date = date
-                formatted_records.append(f"{code_name}:{formatted_date}")
-            else:
-                formatted_records.append(record)
+                
+                formatted_record = f"{code_name}:{formatted_date}"
+                
+                # コードの種別で分類
+                first_char = code[0].upper()
+                if first_char == 'R' or zenkaku_code[0] == 'Ｒ':
+                    # R系 = 登録系
+                    registration_records.append(formatted_record)
+                elif first_char.isdigit():
+                    # 数字で始まる = 審判系
+                    trial_records.append(formatted_record)
+                else:
+                    # A系およびその他（IB/MD/AP/M3など） = 審査系
+                    exam_records.append(formatted_record)
         
-        return formatted_records
+        return {
+            'exam': exam_records,
+            'trial': trial_records,
+            'registration': registration_records
+        }
+    
+    def _determine_trademark_type(self, row) -> str:
+        """商標タイプを判定
+        
+        Args:
+            row: データベースの行データ
+        
+        Returns:
+            商標タイプ名
+        """
+        # sqlite3.Rowオブジェクトを辞書に変換
+        row_dict = dict(row) if not isinstance(row, dict) else row
+        
+        # 標準文字商標
+        if row_dict.get('standard_char_exist') == '1':
+            return '標準文字'
+        
+        # 特殊商標（立体、ホログラム等）
+        if row_dict.get('special_mark_exist') == '1':
+            # TODO: より詳細な判定が必要な場合は、追加テーブルを参照
+            return '特殊商標'
+        
+        # 色彩商標
+        if row_dict.get('color_exist') == '1':
+            return '色彩'
+        
+        # 図形商標（画像データがある場合）
+        if row_dict.get('trademark_image_data'):
+            return '図形'
+        
+        # 通常商標
+        return '通常'
     
     def _convert_code_to_name(self, code: str, code_type: str) -> str:
         """種別コードを日本語名に変換
@@ -10381,6 +10743,19 @@ class TMCloudIntegratedSearch:
             if not name:
                 name = self.DECISION_TYPE_MAP.get(code)
             return name if name else code
+        
+        elif code_type == 'international_class_version':
+            # 国際分類版のマッピング
+            version_map = {
+                'Z': '第12版',
+                'Y': '第11版',
+                'X': '第10版',
+                'W': '第9版',
+                'V': '第8版',
+                'U': '第7版',
+                'T': '第6版'
+            }
+            return version_map.get(code, code) if code else None
         
         else:
             return code

@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""
+TMCloud CLI - 直接実行可能な検索ツール
+Usage: ./tmcloud [オプション]
+"""
+
+import argparse
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from tmcloud_search_integrated import TMCloudIntegratedSearch
+
+def main():
+    parser = argparse.ArgumentParser(description='TMCloud 商標検索')
+    parser.add_argument('keyword', help='検索キーワード')
+    parser.add_argument('-t', '--type', default='trademark',
+                        choices=['trademark', 'phonetic', 'app_num', 'reg_num', 'applicant', 'similar_group', 'goods_services'],
+                        help='検索タイプ (default: trademark)')
+    parser.add_argument('-l', '--limit', type=int, default=10,
+                        help='表示件数 (default: 10)')
+    parser.add_argument('-s', '--sort', default='app_date_desc',
+                        choices=['app_date_desc', 'app_date_asc', 'reg_date_desc', 'reg_date_asc', 'trademark_asc', 'trademark_desc'],
+                        help='並び替え (default: app_date_desc)')
+    parser.add_argument('--db', default='tmcloud_v2_20250810_restored.db',
+                        help='データベースファイル')
+    parser.add_argument('--json', action='store_true',
+                        help='JSON形式で出力')
+    
+    args = parser.parse_args()
+    
+    # 検索実行
+    searcher = TMCloudIntegratedSearch(args.db)
+    
+    if args.type == 'trademark':
+        results = searcher.search_trademark_name(args.keyword, limit=args.limit, unified_format=True)
+    elif args.type == 'phonetic':
+        results = searcher.search_phonetic(args.keyword, limit=args.limit, unified_format=True)
+    elif args.type == 'app_num':
+        result = searcher.search_by_app_num(args.keyword, unified_format=True)
+        results = [result] if result else []
+    elif args.type == 'reg_num':
+        result = searcher.search_by_reg_num(args.keyword, unified_format=True)
+        results = [result] if result else []
+    elif args.type == 'applicant':
+        results = searcher.search_applicant(args.keyword, limit=args.limit, unified_format=True)
+    elif args.type == 'similar_group':
+        results = searcher.search_by_similar_group(args.keyword, limit=args.limit, unified_format=True)
+    elif args.type == 'goods_services':
+        results = searcher.search_goods_services(args.keyword, limit=args.limit, unified_format=True)
+    
+    # 並び替え処理
+    if results and len(results) > 0:
+        def get_sort_key(item):
+            info = item.get('basic_info', item)
+            if args.sort == 'app_date_desc' or args.sort == 'app_date_asc':
+                return info.get('app_date', '') or ''
+            elif args.sort == 'reg_date_desc' or args.sort == 'reg_date_asc':
+                return info.get('reg_date', '') or ''
+            elif args.sort == 'trademark_asc' or args.sort == 'trademark_desc':
+                return info.get('trademark_name', '') or ''
+            return ''
+        
+        reverse = args.sort.endswith('_desc')
+        results = sorted(results, key=get_sort_key, reverse=reverse)
+    
+    # 結果表示
+    if args.json:
+        import json
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+    else:
+        print(f"\n検索結果: {len(results)}件")
+        print("=" * 80)
+        
+        for i, result in enumerate(results, 1):
+            info = result.get('basic_info', result)
+            print(f"\n[{i}] {info.get('trademark_name', 'N/A')}")
+            print(f"  出願番号: {info.get('app_num', 'N/A')}")
+            print(f"  登録番号: {info.get('reg_num', 'N/A')}")
+            print(f"  出願日: {info.get('app_date', 'N/A')}")
+            
+            if info.get('classes'):
+                print(f"  区分: {', '.join(info['classes'])}")
+            
+            if info.get('phonetics'):
+                print(f"  称呼: {', '.join(info['phonetics'])}")
+            
+            # 新しく追加したフィールドの表示
+            if info.get('final_disposition_type'):
+                print(f"  最終処分コード: {info['final_disposition_type']}")
+            if info.get('final_disposition_article'):
+                print(f"  最終処分記事: {info['final_disposition_article']}")
+            if info.get('final_disposition_date'):
+                print(f"  最終処分日: {info['final_disposition_date']}")
+            if info.get('reg_article_gazette_date'):
+                print(f"  登録公報発行日: {info['reg_article_gazette_date']}")
+            if info.get('pub_article_gazette_date'):
+                print(f"  公開公報発行日: {info['pub_article_gazette_date']}")
+            if info.get('conti_prd_expire_date'):
+                print(f"  存続期間満了日: {info['conti_prd_expire_date']}")
+            if info.get('next_pen_payment_limit_date'):
+                print(f"  次回分納期限日: {info['next_pen_payment_limit_date']}")
+            
+            if info.get('goods_services'):
+                print("  商品・役務:")
+                for cls, goods in info['goods_services'].items():
+                    # 最初の100文字だけ表示（CLIなので）
+                    display = goods[:100] + "..." if len(goods) > 100 else goods
+                    print(f"    区分{cls}: {display}")
+
+if __name__ == '__main__':
+    main()
