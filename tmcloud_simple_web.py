@@ -11,7 +11,7 @@ from pathlib import Path
 app = Flask(__name__)
 
 # データベースパス（変更可能）
-DB_PATH = Path(__file__).parent / "tmcloud_v2_20250810_restored.db"
+DB_PATH = Path(__file__).parent / "tmcloud_v2_20250818_081655.db"
 
 # HTMLテンプレート（シンプル版）
 HTML_TEMPLATE = """
@@ -40,29 +40,11 @@ HTML_TEMPLATE = """
 <body>
     <h1>TMCloud 商標検索システム</h1>
     
+    <!-- 統合検索フォーム -->
     <div class="search-box">
-        <form id="searchForm">
-            <label>検索タイプ: 
-                <select name="search_type">
-                    <option value="trademark">商標名</option>
-                    <option value="phonetic">称呼</option>
-                    <option value="app_num">出願番号</option>
-                    <option value="reg_num">登録番号</option>
-                    <option value="applicant">出願人</option>
-                    <option value="similar_group">類似群コード</option>
-                    <option value="goods_services">商品・役務</option>
-                </select>
-            </label>
-            <input type="text" name="keyword" placeholder="検索キーワード" required>
-            <button type="submit">検索</button>
-        </form>
-    </div>
-    
-    <!-- 複合条件検索 -->
-    <div class="search-box" style="margin-top: 20px; background-color: #f0f8ff;">
-        <h3>複合条件検索</h3>
+        <h2 style="margin-top: 0;">商標検索</h2>
         <form id="complexSearchForm">
-            <div style="margin-bottom: 10px;">
+            <div id="operatorSection" style="margin-bottom: 10px; display: none;">
                 <label>演算子:
                     <select id="globalOperator">
                         <option value="AND">すべての条件を満たす（AND）</option>
@@ -86,6 +68,22 @@ HTML_TEMPLATE = """
         // XSS対策用のエスケープ関数
         const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;'}[c]));
         
+        // 拒絶条文コードヘルパーの表示/非表示切り替え
+        function toggleRejectionCodeHelper(selectElement) {
+            const conditionDiv = selectElement.closest('.condition-item');
+            const helper = conditionDiv.querySelector('.rejection-code-helper');
+            
+            if (selectElement.value === 'rejection_reason') {
+                if (helper) {
+                    helper.style.display = 'block';
+                }
+            } else {
+                if (helper) {
+                    helper.style.display = 'none';
+                }
+            }
+        }
+        
         // 条件のカウンター
         let conditionCount = 0;
         
@@ -95,13 +93,16 @@ HTML_TEMPLATE = """
         // 検索タイプのオプション
         const searchTypes = [
             {value: 'trademark', label: '商標名'},
-            {value: 'phonetic', label: '称呼'},
+            {value: 'phonetic', label: '称呼（発音同一）'},
+            {value: 'phonetic_exact', label: '称呼（表記同一）'},
             {value: 'app_num', label: '出願番号'},
             {value: 'reg_num', label: '登録番号'},
+            {value: 'intl_reg_num', label: '国際登録番号'},
             {value: 'class', label: '区分'},
             {value: 'applicant', label: '出願人'},
             {value: 'similar_group', label: '類似群コード'},
-            {value: 'goods_services', label: '商品・役務'}
+            {value: 'goods_services', label: '商品・役務'},
+            {value: 'rejection_reason', label: '拒絶条文コード'}
         ];
         
         // 条件を追加する関数
@@ -121,14 +122,95 @@ HTML_TEMPLATE = """
                 `<option value="${t.value}">${t.label}</option>`
             ).join('');
             
+            // 条件が2つ以上になったら演算子セレクタを表示
+            const conditionElements = container.getElementsByClassName('condition-item');
+            if (conditionElements.length >= 1) {
+                document.getElementById('operatorSection').style.display = 'block';
+            }
+            
             condDiv.innerHTML = `
                 <label>条件${conditionCount}:
-                    <select id="type_${conditionCount}">
+                    <select id="type_${conditionCount}" onchange="toggleRejectionCodeHelper(this)">
                         ${optionsHtml}
                     </select>
                     <input type="text" id="keyword_${conditionCount}" placeholder="キーワード" style="width: 250px;">
                     <button type="button" onclick="removeCondition(${conditionCount})" style="background: #dc3545; color: white; padding: 3px 8px; margin-left: 10px;">削除</button>
                 </label>
+                <div class="rejection-code-helper" style="display:none; margin-top:10px; padding:10px; background:#f9f9f9; border:1px solid #ddd; border-radius:4px;">
+                    <div style="font-size:14px; color:#666;">
+                        <strong>拒絶条文コード入力例:</strong><br>
+                        • 完全一致: 30, 41, 42<br>
+                        • 前方一致: 3? (3で始まる全て), 4? (4で始まる全て)<br>
+                        • 複数指定: 30 40 (スペース区切り) または 30,40 (カンマ区切り)<br>
+                        • 全指定: ??<br>
+                        <details style="margin-top:5px;">
+                            <summary style="cursor:pointer; color:#0066cc;">拒絶条文コード完全一覧（特許庁公式）</summary>
+                            <div style="margin-top:5px; font-size:12px; max-height:300px; overflow-y:auto;">
+                                <strong>【第3条関連（登録要件）】</strong><br>
+                                30: 第３条１項各号<br>
+                                31: 第３条１項各号＋第４条１項１６号<br>
+                                32: 第３条１項柱書<br>
+                                33: 第３条１項柱書（定型文付）<br>
+                                34: 第３条１項柱書（定型文、但し書付）<br>
+                                <br>
+                                <strong>【第4条関連（不登録事由）】</strong><br>
+                                40: 第４条１項各号（第１１号～第１３号除く）<br>
+                                41: 第４条１項１１号<br>
+                                42: 第４条１項１２号<br>
+                                43: 第４条１項１３号<br>
+                                44: 第４条１項１１号（番号列記）<br>
+                                45: 第８条１項＋第４条１項１１号<br>
+                                46: 第４条１項１６号<br>
+                                47: 第１９条２項（公益的不登録理由、不使用）<br>
+                                48: 更新（住所相違）<br>
+                                49: 更新（氏名相違）<br>
+                                <br>
+                                <strong>【第3条・第4条組み合わせ】</strong><br>
+                                52: 第３条柱書＋第４条１項１１号<br>
+                                53: 第３条各号＋第４条１項１１号<br>
+                                54: 第４条各号＋第４条１項１１号<br>
+                                55: その他＋第４条１項１１号<br>
+                                <br>
+                                <strong>【第6条関連（一商標一出願・区分）】</strong><br>
+                                60: 条文なし<br>
+                                61: 第６条１項<br>
+                                62: 第６条１項（防護）又は第６条２項（防護）<br>
+                                63: 第６条１項＋第６条２項<br>
+                                64: 第６４条（防護）<br>
+                                65: 第６条１項（防護）＋第６条２項（防護）<br>
+                                66: 第６条１項又は第６条２項<br>
+                                67: 第６条１項（防護）<br>
+                                68: 防護更新<br>
+                                69: 第６条２項<br>
+                                <br>
+                                <strong>【第7条関連（団体商標）】</strong><br>
+                                71: 第７条１項（商標・商品類似）<br>
+                                72: 第７条１項（番号列記）<br>
+                                73: 第７条３項（商標非類似）<br>
+                                74: 第７条の２第１項<br>
+                                75: 第７条３項（商品非類似）<br>
+                                76: 第７条３項（商標・商品非類似）<br>
+                                <br>
+                                <strong>【附則関連（書換）】</strong><br>
+                                77: 附則第４条１項（指定商品の拡大）<br>
+                                78: 附則第４条１項（書換区分相違）<br>
+                                79: 附則第６条２項（氏名・名称相違）<br>
+                                80: 附則第６条２項（住所相違）<br>
+                                81: 附則第６条２項（氏名及び住所相違）<br>
+                                <br>
+                                <strong>【第8条との組み合わせ】</strong><br>
+                                82: 第３条柱書＋第８条１項＋第４条１項１１号<br>
+                                83: 第３条各号＋第８条１項＋第４条１項１１号<br>
+                                84: 第４条各号＋第８条１項＋第４条１項１１号<br>
+                                85: その他＋第８条１項＋第４条１項１１号<br>
+                                <br>
+                                <strong>【その他の組み合わせ】</strong><br>
+                                92: 第３条柱書＋その他（第４条１項１１号を除く）<br>
+                                93: 第３条各号＋その他（第４条１項１１号を除く）<br>
+                            </div>
+                        </details>
+                    </div>
+                </div>
             `;
             
             container.appendChild(condDiv);
@@ -140,92 +222,108 @@ HTML_TEMPLATE = """
             if (elem) {
                 elem.remove();
             }
+            
+            // 条件が1つ以下になったら演算子セレクタを隠す
+            const container = document.getElementById('searchConditions');
+            const conditionElements = container.getElementsByClassName('condition-item');
+            if (conditionElements.length <= 1) {
+                document.getElementById('operatorSection').style.display = 'none';
+            }
         }
         
-        // 初期状態で2つの条件を追加
+        // 初期状態で1つの条件を追加（単一条件検索もできるように）
         window.addEventListener('DOMContentLoaded', () => {
             addCondition();
-            addCondition();
+            
+            // 検索フォームの処理
+            document.getElementById('complexSearchForm').onsubmit = async (e) => {
+                e.preventDefault();
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '検索中...';
+                
+                // すべての条件を収集
+                const conditions = [];
+                const conditionDivs = document.querySelectorAll('[id^="condition_"]');
+                
+                conditionDivs.forEach(div => {
+                    const id = div.id.split('_')[1];
+                    const type = document.getElementById(`type_${id}`)?.value;
+                    const keyword = document.getElementById(`keyword_${id}`)?.value;
+                    
+                    if (type && keyword) {
+                        conditions.push({
+                            type: type,
+                            keyword: keyword
+                        });
+                    }
+                });
+                
+                const operator = document.getElementById('globalOperator').value;
+                
+                console.log('送信条件:', conditions, 'operator:', operator);  // デバッグ
+                
+                if (conditions.length === 0) {
+                    resultsDiv.innerHTML = '少なくとも1つの条件を入力してください';
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/search_complex', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            conditions: conditions,
+                            operator: operator,
+                            sort_by: 'app_date_desc'  // デフォルトのソート
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('複合検索結果:', data);  // デバッグ
+                    displayResults(data);
+                } catch (error) {
+                    console.error('複合検索エラー:', error);
+                    resultsDiv.innerHTML = 'エラー: ' + error.message;
+                }
+            };
         });
         
-        document.getElementById('searchForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '検索中...';
-            
-            try {
-                const response = await fetch('/search', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        search_type: formData.get('search_type'),
-                        keyword: formData.get('keyword')
-                    })
-                });
-                
-                const data = await response.json();
-                displayResults(data);
-            } catch (error) {
-                resultsDiv.innerHTML = 'エラー: ' + error.message;
-            }
-        };
+        // ========== リファクタリング用共通関数 ==========
         
-        // 複合検索フォームの処理
-        document.getElementById('complexSearchForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '検索中...';
-            
-            // すべての条件を収集
-            const conditions = [];
-            const conditionDivs = document.querySelectorAll('[id^="condition_"]');
-            
-            conditionDivs.forEach(div => {
-                const id = div.id.split('_')[1];
-                const type = document.getElementById(`type_${id}`)?.value;
-                const keyword = document.getElementById(`keyword_${id}`)?.value;
-                
-                if (type && keyword) {
-                    conditions.push({
-                        type: type,
-                        keyword: keyword
-                    });
-                }
-            });
-            
-            const operator = document.getElementById('globalOperator').value;
-            
-            console.log('送信条件:', conditions, 'operator:', operator);  // デバッグ
-            
-            if (conditions.length === 0) {
-                resultsDiv.innerHTML = '少なくとも1つの条件を入力してください';
-                return;
+        // 単一フィールドの表示（空値は表示しない）
+        function addField(label, value) {
+            // 空値のパターンをチェック
+            if (!value || value === '' || value === 'N/A' || 
+                value === '0000000' || value === '00000000' || value === '000') {
+                return '';
             }
-            
-            try {
-                const response = await fetch('/search_complex', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        conditions: conditions,
-                        operator: operator,
-                        sort_by: 'app_date_desc'  // デフォルトのソート
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('複合検索結果:', data);  // デバッグ
-                displayResults(data);
-            } catch (error) {
-                console.error('複合検索エラー:', error);
-                resultsDiv.innerHTML = 'エラー: ' + error.message;
+            return `<div class="field"><span class="field-label">${label}:</span> ${esc(value)}</div>`;
+        }
+        
+        // 配列フィールドの表示（空配列は表示しない）
+        function addArrayField(label, arr) {
+            if (!arr || !Array.isArray(arr) || arr.length === 0) {
+                return '';
             }
-        };
+            // 空文字列を除外
+            const filtered = arr.filter(item => item && String(item).trim());
+            if (filtered.length === 0) {
+                return '';
+            }
+            return `<div class="field"><span class="field-label">${label}:</span> ${filtered.map(item => esc(item)).join(', ')}</div>`;
+        }
+        
+        // 日付フォーマット（YYYYMMDD → YYYY/MM/DD）
+        function formatDate(dateStr) {
+            if (!dateStr || dateStr === '00000000' || dateStr.length !== 8) {
+                return '';  // 空文字列を返して表示しない
+            }
+            return `${dateStr.slice(0,4)}/${dateStr.slice(4,6)}/${dateStr.slice(6,8)}`;
+        }
         
         function displayResults(data) {
             const resultsDiv = document.getElementById('results');
@@ -268,13 +366,16 @@ HTML_TEMPLATE = """
                 if (data.conditions && data.conditions.length > 0) {
                     const typeLabels = {
                         'trademark': '商標名',
-                        'phonetic': '称呼',
+                        'phonetic': '称呼（発音同一）',
+                        'phonetic_exact': '称呼（表記同一）',
                         'app_num': '出願番号',
                         'reg_num': '登録番号',
+                        'intl_reg_num': '国際登録番号',
                         'class': '区分',
                         'applicant': '出願人',
                         'similar_group': '類似群コード',
-                        'goods_services': '商品・役務'
+                        'goods_services': '商品・役務',
+                        'rejection_reason': '拒絶条文コード'
                     };
                     const conditionsText = data.conditions.map(c => 
                         `${typeLabels[c.type] || c.type}「${esc(c.keyword)}」`
@@ -296,61 +397,42 @@ HTML_TEMPLATE = """
                     trademarkDisplay = esc(info.trademark_name || 'N/A');
                 }
                 
+                // マドプロ案件の判定（出願番号の5-6桁目が35,36,37）
+                let isMadrid = false;
+                const appNum = info.app_num || '';
+                if (appNum.length >= 6) {
+                    const position5_6 = appNum.substring(4, 6);
+                    isMadrid = ['35', '36', '37'].includes(position5_6);
+                }
+                
                 html += `
                     <div class="result">
                         <h3>[${index + 1}] ${trademarkDisplay}</h3>
-                        <div class="field"><span class="field-label">出願番号:</span> ${esc(info.app_num || 'N/A')}</div>
-                        <div class="field"><span class="field-label">登録番号:</span> ${esc(info.reg_num || 'N/A')}</div>
-                        <div class="field"><span class="field-label">出願日:</span> ${esc(info.app_date || 'N/A')}</div>
-                        <div class="field"><span class="field-label">登録日:</span> ${esc(info.reg_date || 'N/A')}</div>
-                        <div class="field"><span class="field-label">区分:</span> ${info.classes ? info.classes.map(c => esc(c)).join(', ') : 'N/A'}</div>
+                        ${!isMadrid ? addField('出願番号', info.app_num) : addField('マドプロ管理番号', info.app_num)}
+                        ${isMadrid && info.intl_reg_num ? addField('国際登録番号', info.intl_reg_num) : ''}
+                        ${addField('登録番号', info.reg_num)}
+                        ${addField('出願日', formatDate(info.app_date))}
+                        ${addField('登録日', formatDate(info.reg_date))}
+                        ${addArrayField('区分', info.classes)}
                 `;
                 
-                if (info.phonetics && info.phonetics.length > 0) {
-                    html += `<div class="field"><span class="field-label">称呼:</span> ${info.phonetics.map(p => esc(p)).join(', ')}</div>`;
-                }
-                
-                // 出願人
-                if (info.applicants && info.applicants.length > 0) {
-                    html += `<div class="field"><span class="field-label">出願人:</span> ${info.applicants.map(a => esc(a)).join(', ')}</div>`;
-                }
-                
-                // 代理人
-                if (info.agents && info.agents.length > 0) {
-                    html += `<div class="field"><span class="field-label">代理人:</span> ${info.agents.map(a => esc(a)).join(', ')}</div>`;
-                }
-                
-                // 権利者
-                if (info.right_holders && info.right_holders.length > 0) {
-                    html += `<div class="field"><span class="field-label">権利者:</span> ${info.right_holders.map(r => esc(r)).join(', ')}</div>`;
-                }
+                html += addArrayField('称呼', info.phonetics);
+                html += addArrayField('出願人', info.applicants);
+                html += addArrayField('代理人', info.agents);
+                html += addArrayField('権利者', info.right_holders);
                 
                 // ステータス情報
-                if (info.final_disposition_type) {
-                    html += `<div class="field"><span class="field-label">最終処分コード:</span> ${esc(info.final_disposition_type)}</div>`;
-                }
-                if (info.final_disposition_article) {
-                    html += `<div class="field"><span class="field-label">最終処分記事:</span> ${esc(info.final_disposition_article)}</div>`;
-                }
-                if (info.final_disposition_date) {
-                    html += `<div class="field"><span class="field-label">最終処分日:</span> ${esc(info.final_disposition_date)}</div>`;
-                }
+                html += addField('最終処分コード', info.final_disposition_type);
+                html += addField('最終処分記事', info.final_disposition_article);
+                html += addField('最終処分日', formatDate(info.final_disposition_date));
                 
                 // 公報情報
-                if (info.reg_article_gazette_date) {
-                    html += `<div class="field"><span class="field-label">登録公報発行日:</span> ${esc(info.reg_article_gazette_date)}</div>`;
-                }
-                if (info.pub_article_gazette_date) {
-                    html += `<div class="field"><span class="field-label">公開公報発行日:</span> ${esc(info.pub_article_gazette_date)}</div>`;
-                }
+                html += addField('登録公報発行日', formatDate(info.reg_article_gazette_date));
+                html += addField('公開公報発行日', formatDate(info.pub_article_gazette_date));
                 
                 // 存続期間・分納情報
-                if (info.conti_prd_expire_date) {
-                    html += `<div class="field"><span class="field-label">存続期間満了日:</span> ${esc(info.conti_prd_expire_date)}</div>`;
-                }
-                if (info.next_pen_payment_limit_date) {
-                    html += `<div class="field"><span class="field-label">次回分納期限日:</span> ${esc(info.next_pen_payment_limit_date)}</div>`;
-                }
+                html += addField('存続期間満了日', formatDate(info.conti_prd_expire_date));
+                html += addField('次回分納期限日', formatDate(info.next_pen_payment_limit_date));
                 
                 // 出願種別・付加情報
                 const appTypes = [];
@@ -362,44 +444,117 @@ HTML_TEMPLATE = """
                 if (appTypes.length > 0) {
                     html += `<div class="field"><span class="field-label">出願種別:</span> ${appTypes.map(t => esc(t)).join(', ')}</div>`;
                 }
-                if (info.orig_app_type) {
-                    html += `<div class="field"><span class="field-label">元出願種別:</span> ${esc(info.orig_app_type)}</div>`;
-                }
+                html += addField('元出願種別', info.orig_app_type);
                 if (info.article3_2_flag === '1') {
-                    html += `<div class="field"><span class="field-label">3条2項適用:</span> あり</div>`;
+                    html += addField('3条2項適用', 'あり');
                 }
                 if (info.article5_4_flag === '1') {
-                    html += `<div class="field"><span class="field-label">5条4項適用:</span> あり</div>`;
+                    html += addField('5条4項適用', 'あり');
                 }
                 
                 // 審査・査定情報
-                if (info.exam_type) {
-                    html += `<div class="field"><span class="field-label">審査種別:</span> ${esc(info.exam_type)}</div>`;
-                }
-                if (info.decision_type) {
-                    html += `<div class="field"><span class="field-label">査定種別:</span> ${esc(info.decision_type)}</div>`;
-                }
+                html += addField('審査種別', info.exam_type);
+                html += addField('査定種別', info.decision_type);
                 
                 // 審判情報
-                if (info.appeal_nums && info.appeal_nums.length > 0) {
-                    html += `<div class="field"><span class="field-label">審判番号:</span> ${info.appeal_nums.map(n => esc(n)).join(', ')}</div>`;
-                }
-                if (info.appeal_types && info.appeal_types.length > 0) {
-                    html += `<div class="field"><span class="field-label">審判種別:</span> ${info.appeal_types.map(t => esc(t)).join(', ')}</div>`;
-                }
+                html += addArrayField('審判番号', info.appeal_nums);
+                html += addArrayField('審判種別', info.appeal_types);
                 
                 // 出願人住所・国県コード
-                if (info.applicant_addresses && info.applicant_addresses.length > 0) {
-                    const nonEmptyAddresses = info.applicant_addresses.filter(a => a && a.trim());
-                    if (nonEmptyAddresses.length > 0) {
-                        html += `<div class="field"><span class="field-label">出願人住所:</span> ${nonEmptyAddresses.map(a => esc(a)).join(', ')}</div>`;
-                    }
+                html += addArrayField('出願人住所', info.applicant_addresses);
+                html += addArrayField('国県コード', info.applicant_country_codes);
+                
+                // 商標タイプ
+                html += addField('商標タイプ', info.trademark_type);
+                
+                // 詳細な説明
+                if (info.detailed_description) {
+                    html += `<div class="field"><span class="field-label">詳細な説明:</span><br>`;
+                    html += `<div style="margin-left: 120px; white-space: pre-wrap;">${esc(info.detailed_description)}</div>`;
+                    html += `</div>`;
                 }
-                if (info.applicant_country_codes && info.applicant_country_codes.length > 0) {
-                    const nonEmptyCodes = info.applicant_country_codes.filter(c => c && c.trim());
-                    if (nonEmptyCodes.length > 0) {
-                        html += `<div class="field"><span class="field-label">国県コード:</span> ${nonEmptyCodes.map(c => esc(c)).join(', ')}</div>`;
+                
+                // ウィーンコード
+                html += addArrayField('ウィーンコード', info.vienna_codes);
+                
+                // 拒絶条文コード
+                html += addArrayField('拒絶条文', info.rejection_reason_codes);
+                
+                // 審決分類
+                html += addArrayField('審決分類', info.appeal_disposition_codes);
+                
+                // 優先権情報
+                if (info.priority_claims && info.priority_claims.length > 0) {
+                    html += `<div class="field"><span class="field-label">優先権主張:</span><br>`;
+                    info.priority_claims.forEach(claim => {
+                        const countryDisplay = claim.country_name || claim.country_code;
+                        html += `&nbsp;&nbsp;• ${esc(countryDisplay)} ${esc(claim.app_num)} (${esc(claim.date)})<br>`;
+                    });
+                    html += `</div>`;
+                }
+                
+                // 異議申立情報
+                if (info.oppositions && info.oppositions.length > 0) {
+                    html += `<div class="field"><span class="field-label">異議申立:</span><br>`;
+                    info.oppositions.forEach(opposition => {
+                        html += `&nbsp;&nbsp;• 異議番号: ${esc(opposition.opposition_num)} 申立日: ${esc(opposition.app_date)}`;
+                        if (opposition.disposition_code) {
+                            html += ` 処分: ${esc(opposition.disposition_code)}`;
+                        }
+                        if (opposition.confirm_date && opposition.confirm_date !== '00000000') {
+                            html += ` 確定日: ${esc(opposition.confirm_date)}`;
+                        }
+                        html += `<br>`;
+                    });
+                    html += `</div>`;
+                }
+                
+                // 移転受付情報
+                if (info.transfers && info.transfers.length > 0) {
+                    html += `<div class="field"><span class="field-label">移転受付:</span><br>`;
+                    info.transfers.forEach(transfer => {
+                        html += `&nbsp;&nbsp;• 管理番号: ${esc(transfer.mu_num)}`;
+                        if (transfer.receipt_info) {
+                            html += ` ${esc(transfer.receipt_info)}`;
+                        }
+                        if (transfer.update_date && transfer.update_date !== '00000000') {
+                            html += ` (更新日: ${esc(transfer.update_date)})`;
+                        }
+                        html += `<br>`;
+                    });
+                    html += `</div>`;
+                }
+                
+                // 防護標章関連情報（000は無効値なので除外）
+                const hasValidDefensiveInfo = (
+                    (info.defensive_num && info.defensive_num !== '000') ||
+                    info.defensive_orig_app_num || 
+                    info.defensive_orig_reg_num || 
+                    info.renewal_defensive_num || 
+                    info.rewrite_defensive_num
+                );
+                
+                if (hasValidDefensiveInfo) {
+                    html += `<div class="field"><span class="field-label">防護標章関連:</span><br>`;
+                    if (info.defensive_num && info.defensive_num !== '000') {
+                        html += `&nbsp;&nbsp;• 防護標章番号: ${esc(info.defensive_num)}<br>`;
                     }
+                    if (info.defensive_orig_app_num) {
+                        html += `&nbsp;&nbsp;• 元出願番号: ${esc(info.defensive_orig_app_num)}<br>`;
+                    }
+                    if (info.defensive_orig_reg_num) {
+                        html += `&nbsp;&nbsp;• 元登録番号: ${esc(info.defensive_orig_reg_num)}<br>`;
+                    }
+                    if (info.defensive_orig_split_num) {
+                        html += `&nbsp;&nbsp;• 元分割番号: ${esc(info.defensive_orig_split_num)}<br>`;
+                    }
+                    if (info.renewal_defensive_num) {
+                        html += `&nbsp;&nbsp;• 更新防護標章番号: ${esc(info.renewal_defensive_num)}<br>`;
+                    }
+                    if (info.rewrite_defensive_num) {
+                        html += `&nbsp;&nbsp;• 書換防護標章番号: ${esc(info.rewrite_defensive_num)}<br>`;
+                    }
+                    html += `</div>`;
                 }
                 
                 // 中間記録を審査・審判・登録に分けて表示
@@ -440,18 +595,38 @@ HTML_TEMPLATE = """
                     }
                 }
                 
-                // 旧フィールド（互換性のため残す）
-                if (info.disposition_code) {
-                    html += `<div class="field"><span class="field-label">最終処分コード:</span> ${esc(info.disposition_code)}</div>`;
-                }
-                if (info.disposition_date) {
-                    html += `<div class="field"><span class="field-label">最終処分日:</span> ${esc(info.disposition_date)}</div>`;
-                }
-                if (info.status) {
-                    html += `<div class="field"><span class="field-label">ステータス:</span> ${esc(info.status)}</div>`;
+                // 審判中間記録（trial_intermediate_recordsから）  
+                if (info.trial_intermediate_records && info.trial_intermediate_records.length > 0) {
+                    html += `<div class="field"><span class="field-label">審判中間記録 (${info.trial_intermediate_records.length}件):</span><br>`;
+                    info.trial_intermediate_records.forEach(record => {
+                        const recordText = record['中間記録'] || record['中間コード'] || '';
+                        const date = record['日付'] || '';
+                        if (recordText || date) {
+                            html += `&nbsp;&nbsp;• ${esc(recordText)} (${esc(date)})<br>`;
+                        }
+                    });
+                    html += `</div>`;
                 }
                 
-                if (info.goods_services) {
+                // 登録中間記録（registration_intermediate_recordsから）
+                if (info.registration_intermediate_records && info.registration_intermediate_records.length > 0) {
+                    html += `<div class="field"><span class="field-label">登録中間記録 (${info.registration_intermediate_records.length}件):</span><br>`;
+                    info.registration_intermediate_records.forEach(record => {
+                        const recordText = record['中間記録'] || record['中間コード'] || '';
+                        const date = record['日付'] || '';
+                        if (recordText || date) {
+                            html += `&nbsp;&nbsp;• ${esc(recordText)} (${esc(date)})<br>`;
+                        }
+                    });
+                    html += `</div>`;
+                }
+                
+                // 旧フィールド（互換性のため残す）
+                html += addField('最終処分コード', info.disposition_code);
+                html += addField('最終処分日', formatDate(info.disposition_date));
+                html += addField('ステータス', info.status);
+                
+                if (info.goods_services && Object.keys(info.goods_services).length > 0) {
                     html += '<div class="field"><span class="field-label">商品・役務:</span></div>';
                     for (const [cls, goods] of Object.entries(info.goods_services)) {
                         // 全文表示（折りたたみ廃止）
@@ -459,7 +634,7 @@ HTML_TEMPLATE = """
                     }
                 }
                 
-                if (info.similar_groups) {
+                if (info.similar_groups && Object.keys(info.similar_groups).length > 0) {
                     html += '<div class="field"><span class="field-label">類似群コード:</span></div>';
                     for (const [cls, codes] of Object.entries(info.similar_groups)) {
                         html += `<div class="similar-codes">区分${esc(cls)}: ${codes.map(c => esc(c)).join(', ')}</div>`;
@@ -547,12 +722,17 @@ def search():
         if search_type == 'trademark':
             results = searcher.search_trademark_name(keyword, limit=3000, unified_format=True)
         elif search_type == 'phonetic':
-            results = searcher.search_phonetic(keyword, limit=3000, unified_format=True)
+            results = searcher.search_phonetic(keyword, limit=3000, unified_format=True, search_type='pronunciation')
+        elif search_type == 'phonetic_exact':
+            results = searcher.search_phonetic(keyword, limit=3000, unified_format=True, search_type='exact')
         elif search_type == 'app_num':
             result = searcher.search_by_app_num(keyword, unified_format=True)  # 単一番号検索
             results = [result] if result else []  # リストに変換
         elif search_type == 'reg_num':
             result = searcher.search_by_reg_num(keyword, unified_format=True)  # 単一番号検索
+            results = [result] if result else []  # リストに変換
+        elif search_type == 'intl_reg_num':
+            result = searcher.search_by_intl_reg_num(keyword, unified_format=True)  # 国際登録番号検索
             results = [result] if result else []  # リストに変換
         elif search_type == 'applicant':
             results = searcher.search_applicant(keyword, limit=3000, unified_format=True)
@@ -560,6 +740,8 @@ def search():
             results = searcher.search_by_similar_group(keyword, limit=3000, unified_format=True)
         elif search_type == 'goods_services':
             results = searcher.search_goods_services(keyword, limit=3000, item_and=True, unified_format=True)
+        elif search_type == 'rejection_reason':
+            results = searcher.search_rejection_reason(keyword, limit=3000, unified_format=True)
         else:
             return jsonify({'error': '不明な検索タイプ'})
         
