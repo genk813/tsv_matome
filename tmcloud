@@ -101,6 +101,56 @@ def main():
             if info.get('next_pen_payment_limit_date'):
                 print(f"  次回分納期限日: {info['next_pen_payment_limit_date']}")
             
+            if info.get('priority_claims') and len(info['priority_claims']) > 0:
+                print("  優先権主張:")
+                for claim in info['priority_claims']:
+                    country_display = claim.get('country_name', claim['country_code'])
+                    print(f"    • {country_display} {claim['app_num']} ({claim['date']})")
+            
+            if info.get('oppositions') and len(info['oppositions']) > 0:
+                print("  異議申立:")
+                for opposition in info['oppositions']:
+                    disp_text = f"    • 異議番号: {opposition['opposition_num']} 申立日: {opposition['app_date']}"
+                    if opposition.get('disposition_code'):
+                        disp_text += f" 処分: {opposition['disposition_code']}"
+                    if opposition.get('confirm_date') and opposition['confirm_date'] != '00000000':
+                        disp_text += f" 確定日: {opposition['confirm_date']}"
+                    print(disp_text)
+            
+            if info.get('transfers') and len(info['transfers']) > 0:
+                print("  移転受付:")
+                for transfer in info['transfers']:
+                    disp_text = f"    • 管理番号: {transfer['mu_num']}"
+                    if transfer.get('receipt_info'):
+                        disp_text += f" {transfer['receipt_info']}"
+                    if transfer.get('update_date') and transfer['update_date'] != '00000000':
+                        disp_text += f" (更新日: {transfer['update_date']})"
+                    print(disp_text)
+            
+            # 防護標章関連情報（000は無効値なので除外）
+            has_valid_defensive = any([
+                (info.get('defensive_num') and info.get('defensive_num') != '000'),
+                info.get('defensive_orig_app_num'), 
+                info.get('defensive_orig_reg_num'),
+                info.get('renewal_defensive_num'),
+                info.get('rewrite_defensive_num')
+            ])
+            
+            if has_valid_defensive:
+                print("  防護標章関連:")
+                if info.get('defensive_num') and info['defensive_num'] != '000':
+                    print(f"    • 防護標章番号: {info['defensive_num']}")
+                if info.get('defensive_orig_app_num'):
+                    print(f"    • 元出願番号: {info['defensive_orig_app_num']}")
+                if info.get('defensive_orig_reg_num'):
+                    print(f"    • 元登録番号: {info['defensive_orig_reg_num']}")
+                if info.get('defensive_orig_split_num'):
+                    print(f"    • 元分割番号: {info['defensive_orig_split_num']}")
+                if info.get('renewal_defensive_num'):
+                    print(f"    • 更新防護標章番号: {info['renewal_defensive_num']}")
+                if info.get('rewrite_defensive_num'):
+                    print(f"    • 書換防護標章番号: {info['rewrite_defensive_num']}")
+            
             if info.get('goods_services'):
                 print("  商品・役務:")
                 for cls, goods in info['goods_services'].items():

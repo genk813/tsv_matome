@@ -1,360 +1,196 @@
-# CLAUDE.md
+# CLAUDE.md — 不変ルール & 行動規範（v2025-08-09)
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## TMCloud開発の絶対ルール
+- **検索機能は全て`tmcloud_search_integrated.py`に実装** - 別スクリプト作成禁止
+- **作業完了時の「まとめ」禁止** - 無駄なトークン消費を避ける
+- **簡潔に結果のみ報告** - 冗長な説明は不要
+- **ウィーンコード表示は統一フォーマット(`unified_format=True`)で全検索に実装済み** - 検索結果にウィーンコードが自動的に含まれる
 
-## Project Overview
+> この文書は **指示（ガードレール）だけ**を記載する。運用手順・履歴・統計・仕様の詳細は **HISTORY.md / SPEC.md** を参照。  
+> ここに無いことは実装しない。迷ったら**質問**してから動く。
 
-TSV_MATOME is a Japanese trademark search system that processes TSV (Tab-Separated Values) files from the Japan Patent Office, manages trademark data in SQLite, and provides both web-based and command-line search interfaces. The system handles domestic and international trademark data with unified search capabilities, processing trademark text, applicant information, rights holder data, images, and goods classification.
+---
 
-## Core Architecture
+## 0. 目的と適用範囲
+- TMCloud（日本商標DB）の **安全・一貫・再現性** を担保するための不変ルール集。  
+- 対象：初期インポート、週次更新、検索用整形（正規化）を行う**コード・SQL・データ変換**すべて。  
+- 本ファイルは **不変**。変更は必ず別PRでレビュー。
 
-### Database Layer
-- **Main Database**: `output.db` (SQLite) - contains 31+ tables with 450,000+ total records (optimized as of 2025-07-13)
-- **Schema**: Defined in `create_schema.sql` and `scripts/phase2_schema.sql` with 43+ optimized indexes
-- **Database Size**: ~288MB with comprehensive domestic and international trademark data
-- **Unified Search**: `unified_trademark_search_view` - combines domestic and international trademarks (2,018,919+ records)
-- **Key Domestic Tables**:
-  - `jiken_c_t` - Core trademark case information (22,227+ records, 100% coverage) 
-  - `standard_char_t_art`, `indct_use_t_art`, `search_use_t_art_table` - Trademark text (90%+ coverage)
-  - `right_person_art_t` - Rights holder information (registered trademarks only)
-  - `jiken_c_t_shutugannindairinin` - Applicant/agent information 
-  - `jiken_c_t_shohin_joho` - Designated goods/services information (100% coverage)
-  - `goods_class_art` - Goods/services classification (30,582 records with optimized indexes)
-  - `reg_mapping` - Critical mapping table linking application numbers to registration numbers (33,764 mappings)
-  - `applicant_mapping` - Partial applicant code to name mapping (573 entries with confidence levels)
-  - `t_sample` - Trademark image data (Base64 encoded images)
-  - `t_knd_info_art_table` - Similar group codes (64,404+ records)
-- **International Trademark Tables (Phase 2)**:
-  - `intl_trademark_registration` - International trademark registration management (1,430 records)
-  - `intl_trademark_progress` - International trademark progress information (5,738 records)
-  - `intl_trademark_holder` - International trademark rights holder information (1,492 records)
-  - `intl_trademark_goods_services` - International trademark goods/services classification (2,280 records)
-  - `intl_trademark_text` - International trademark text information (1,339 records)
+---
 
-### Application Layer
-- **Production Flask App**: `app_dynamic_join_claude_optimized.py` - Main web interface (port 5002)
-- **Optimized CLI Search Tool**: `cli_trademark_search.py` - High-performance command-line interface with duplicate elimination
-- **Enhanced CLI Search**: `cli_trademark_search_enhanced.py` - TM-SONAR compliant search with advanced normalization
-- **Text Normalization**: `text_normalizer.py` - TM-SONAR level text processing and pronunciation matching
-- **Autonomous System**: `autonomous_system_launcher.py` - Self-testing and improvement system
-- **HTML Generators**: `search_results_html_generator_improved.py` - Responsive HTML output with folding
-- **Core Architecture**: Direct search optimization pattern bypassing unified view for performance (2041x improvement achieved)
-- **Unified Search System**: Seamless integration of domestic 🇯🇵 and international 🌍 trademark data with duplicate elimination
+## 1. 用語
+- **SSoT**: Single Source of Truth（一次情報の優先順位）。  
+- **key_columns**: UPSERT の衝突判定に使う **完全主キー列**。  
+- **mapped_data**: TSV→`column_mapping` で DB 列名に写像した直後の辞書。  
+- **defaults**: 欠損補完値（後述の安全注入ルールに従う）。
 
-### Data Processing Pipeline
-- **TSV Import**: `import_tsv_data_fixed.py` - Handles 77+ different TSV file types (272MB+ total)
-- **Phase 2 International Import**: `scripts/import_phase2_international_trademarks.py` - International trademark data import
-- **Database Optimization**: `database_optimization.py` - Performance optimization and duplicate removal
-- **Image Processing**: `extract_images_no_pandas.py` - Extracts Base64 images (6,488+ images available)
-- **Weekly Updates**: `weekly_data_updater.py` - Incremental data updates with automatic backups
-- **Unified Search View**: `scripts/create_unified_trademark_view.sql` - Creates integrated domestic/international search view
+---
 
-## Common Commands
+## 2. 参照優先順位（SSoT）
+1. **スキーマ** `tmcloud_schema_v2.sql`（真実の源泉）  
+2. **実DBメタ** `PRAGMA table_info(<table>)`（実体確認）  
+3. **マッピング実装** `tmcloud_import_v2.py` / `tmcloud_weekly_update.py`  
+> 相互矛盾時は **スキーマを真**として、実装を修正する提案を出す。
 
-### Database Operations
-```bash
-# Initialize fresh database with optimized schema
-python3 init_database.py
+---
 
-# Build critical reg_mapping table (enables rights holder display)
-python3 build_reg_mapping.py
+## 3. 絶対禁止（MUST NOT）
+- 列名/型/主キーの**推測**・仮置きのまま実装。  
+- `ON CONFLICT` が **PK/UNIQUE** と一致しない UPSERT。  
+- **存在しない列**や `column_mapping` 外の列に defaults を注入して INSERT/UPDATE。  
+- 複数行結合で **主キーの一部を落とす**（例：`key_columns[:-1]`）。
 
-# Create partial applicant mapping (enables some applicant name display) 
-python3 create_partial_applicant_mapping.py
+---
 
-# Phase 1: Import applicant master data (improves applicant name coverage)
-python3 import_applicant_master_data.py
+## 4. 実装原則（MUST）
+### 4.1 UPSERT
+- `key_columns` はスキーマの **PK/UNIQUE と完全一致**させる。  
+- `key_columns` は **必ず `column_mapping` に含める**（TSV欠損時は安全な既定値を用意、またはスキップ）。
 
-# Phase 2: Import international trademark data (Madrid Protocol)
-python3 scripts/import_phase2_international_trademarks.py
+### 4.2 defaults の**安全注入**
+- 対象列は **(実在カラム) ∩ (column_mapping ∪ key_columns)** のみ。  
+- **空/NULL のときだけ**補完する。  
+- 直前に **テーブル実在カラム** を `PRAGMA table_info()` で取得してフィルタ。
 
-# Create unified search view for domestic and international trademarks
-python3 -c "
-import sqlite3
-conn = sqlite3.connect('output.db')
-with open('scripts/create_unified_trademark_view.sql', 'r', encoding='utf-8') as f:
-    conn.executescript(f.read())
-conn.commit()
-conn.close()
-"
-
-# Run comprehensive database optimization (indexes, duplicate removal)
-python3 database_optimization.py
-
-# CRITICAL: If data integrity issues arise (Sony search returns 0)
-python3 fix_sony_search_corrected.py
-
-# Apply optimized unified view (resolves duplicate display issues)
-python3 -c "
-import sqlite3
-conn = sqlite3.connect('output.db')
-with open('scripts/create_unified_trademark_view_fixed.sql', 'r', encoding='utf-8') as f:
-    conn.executescript(f.read())
-conn.commit()
-conn.close()
-"
-```
-
-### Search and Analysis
-```bash
-# Unified CLI trademark search (domestic + international)
-python3 cli_trademark_search.py --mark-text "ソニー" --limit 10
-python3 cli_trademark_search.py --app-num "2020138119"
-python3 cli_trademark_search.py --goods-classes "09" --limit 5
-python3 cli_trademark_search.py --similar-group-codes "11C01" --limit 5
-
-# International trademark specific searches
-python3 cli_trademark_search.py --intl-reg-num "0489196"
-python3 cli_trademark_search.py --international --goods-classes "42" --limit 5
-
-# Enhanced CLI search with TM-SONAR normalization
-python3 cli_trademark_search_enhanced.py --mark-text "ソニー" --enhanced --limit 10
-python3 cli_trademark_search_enhanced.py --mark-text "チヂミ" --pronunciation --limit 5
-python3 cli_trademark_search_enhanced.py --mark-text "ソニー,パナソニック" --tm-sonar --limit 20
-python3 cli_trademark_search_enhanced.py --mark-text "ソニ？" --fuzzy --limit 15
-
-# Enhanced applicant search
-python3 cli_trademark_search_enhanced.py --applicant-name "ＮＴＴ株式会社" --limit 5
-
-# Generate responsive HTML search results
-python3 search_results_html_generator_improved.py --mark-text "ブル" --limit 3 --output "results.html"
-
-# Autonomous system operations
-python3 autonomous_system_launcher.py status
-python3 autonomous_system_launcher.py search --mark-text "ソニー" --limit 10
-python3 autonomous_system_launcher.py test
-python3 autonomous_system_launcher.py improve
-```
-
-### Application Servers
-```bash
-# Production Flask app (requires: pip install flask)
-python3 app_dynamic_join_claude_optimized.py
-# → http://localhost:5002
-
-# Enhanced server with applicant support
-python3 enhanced_web_server.py
-# → http://localhost:8001
-
-# Basic test server (no Flask required)
-python3 simple_web_test.py  
-# → http://localhost:8000
-```
-
-### System Diagnostics and Maintenance
-```bash
-# Comprehensive system analysis and current challenges
-python3 analyze_current_state.py
-python3 deep_current_challenges_analysis.py
-
-# Performance optimization analysis
-python3 optimize_goods_classification_search.py
-
-# Test unified view compatibility (if needed)
-python3 fix_unified_view_compatibility.py
-
-# Run comprehensive search testing (all patterns)
-python3 comprehensive_search_test.py
-
-# Coverage analysis and data quality assessment
-python3 analyze_coverage_gaps.py
-python3 analyze_database_detailed.py
-
-# Apply fixed unified view (resolves duplicate issues)
-python3 -c "
-import sqlite3
-conn = sqlite3.connect('output.db')
-with open('scripts/create_unified_trademark_view_fixed.sql', 'r', encoding='utf-8') as f:
-    conn.executescript(f.read())
-conn.commit()
-conn.close()
-"
-```
-
-## Key Implementation Details
-
-### Critical System Fixes (2025-07-13)
-**IMPORTANT**: The system underwent major repairs on 2025-07-13. All critical issues resolved:
-
-1. **Duplicate Display Fix**: Resolved 2041x duplication in search results (Sony: 4082→2 results)
-2. **Performance Optimization**: Goods classification search from timeout to <1s response time
-3. **Data Integrity**: Added 5,539 missing `jiken_c_t` records, resolved all orphaned data
-4. **Search Architecture**: Implemented direct search bypass for unified view performance issues
-5. **Index Optimization**: Added composite indexes achieving 99.98% performance improvement
-
-### Database Integrity Patterns
+**Canonical snippet**
 ```python
-# CRITICAL: Always check for missing jiken_c_t records before queries
-def ensure_data_integrity():
-    """Ensure trademark text tables have corresponding jiken_c_t records"""
-    missing_query = """
-        SELECT DISTINCT s.normalized_app_num
-        FROM standard_char_t_art s
-        LEFT JOIN jiken_c_t j ON s.normalized_app_num = j.normalized_app_num
-        WHERE j.normalized_app_num IS NULL
-    """
-    # If missing records found, run fix_sony_search_corrected.py
+cols_in_db = {r[1] for r in conn.execute(f"PRAGMA table_info({{table_name}})")}
+valid_cols = set(column_mapping.values()) | set(key_columns)
+safe_defaults = {k:v for k,v in defaults.items() if k in cols_in_db and k in valid_cols}
+
+for col, val in safe_defaults.items():
+    if (col not in mapped_data) or (mapped_data[col] in (None, "")):
+        mapped_data[col] = val
+
+# 最後に mapped_data も実在カラムでフィルタ
+mapped_data = {k:v for k,v in mapped_data.items() if k in cols_in_db}
 ```
 
-### Single-Query Optimization Pattern
-```python
-# ALWAYS use this pattern for search queries to avoid N+1 problems
-def get_optimized_results(app_nums: List[str]) -> List[Dict]:
-    query = f"""
-        SELECT DISTINCT
-            j.normalized_app_num AS app_num,
-            COALESCE(s.standard_char_t, iu.indct_use_t, su.search_use_t) as mark_text,
-            COALESCE(rm.reg_num, 'なし') AS registration_number,
-            rp.right_person_name as holder_name,
-            GROUP_CONCAT(DISTINCT gca.goods_classes) AS goods_classes,
-            tknd.smlr_dsgn_group_cd as similar_groups,
-            td.dsgnt as pronunciation,
-            CASE WHEN ts.image_data IS NOT NULL THEN 'あり' ELSE 'なし' END as has_image
-        FROM jiken_c_t j
-        LEFT JOIN standard_char_t_art s ON j.normalized_app_num = s.normalized_app_num
-        LEFT JOIN indct_use_t_art iu ON j.normalized_app_num = iu.normalized_app_num
-        LEFT JOIN search_use_t_art_table su ON j.normalized_app_num = su.normalized_app_num
-        LEFT JOIN reg_mapping rm ON j.normalized_app_num = rm.app_num
-        LEFT JOIN right_person_art_t rp ON rm.reg_num = rp.reg_num
-        LEFT JOIN goods_class_art gca ON j.normalized_app_num = gca.normalized_app_num
-        LEFT JOIN t_knd_info_art_table tknd ON j.normalized_app_num = tknd.normalized_app_num
-        LEFT JOIN t_dsgnt_art td ON j.normalized_app_num = td.normalized_app_num
-        LEFT JOIN t_sample ts ON j.normalized_app_num = ts.normalized_app_num
-        WHERE j.normalized_app_num IN ({placeholders})
-        GROUP BY j.normalized_app_num
-    """
-```
+### 4.3 正規化の**順序**
+TSV → `column_mapping` → `mapped_data` → **正規化**（例：`app_num` のハイフン除去）。
 
-### Column Name Normalization
-- **Always use `normalized_app_num`** (not `shutugan_no`) for application numbers across all tables
-- **Remove hyphens** from application numbers: `2024-12345` → `202412345`
-- **Use COALESCE** for trademark text priority: `standard_char_t` → `indct_use_t` → `search_use_t`
-- **Consistent naming**: All enhanced tables use `normalized_app_num`
+### 4.4 複数行結合
+- 結合単位は **完全主キー一式**。部分キーでグルーピングしない。  
+- `lengthchoka_flag='1'` 等の仕様結合は **同一キー内だけ**で行う。
 
-### Rights Holder Information Pattern
+### 4.5 画像ページ
+- `page_num` はゼロ埋め **4桁**（既定 `'0001'`）。
+
+### 4.6 FTS（全文検索）
+- external-content 前提（`content = <base>`）。  
+- SQL は **エイリアスで** `WHERE fts MATCH ?` を使う（元名直書き禁止）。
+
+---
+
+## 5. データ正規化（MINIMUM仕様）
+### 5.1 文字列（商標名・出願人名・代理人名 など）
+- ひら→カタ、英小/カナ小→大。  
+- 長音・横線・ハイフンを `-` に統一。  
+- **指定の特殊記号**（▲▼§￠＼∞）と **句読点・中点・点・カンマ・クォート**を除去。  
+- 旧字体→新字体（辞書で段階対応）。  
+- スペース（全/半）除去。  
+- 商標名のみ：**ローマ数字→算用数字**（Ⅰ→1, Ⅲ→3）。  
+- ※DB保存仕様で保持すべき記号（例：読点「。」、《》【】『』等）は **SPEC** に従い例外扱い。
+
+### 5.2 称呼（発音同一）
+1) 完全一致  
+2) ヲ/ヂ/ヅ/ヂャ/ヂュ/ヂョ → オ/ジ/ズ/ジャ/ジュ/ジョ  
+3) 微差音：ヴァ/ヴィ/ヴ/ヴェ/ヴォ → バ/ビ/ブ/ベ/ボ、ツィ→チ、テュ→チュ、フュ→ヒュ、ヴュ→ビュ  
+4) 長音・促音・長音準ずる音の差/有無を同一視（エイ/オウ 等）  
+5) 拗音は大文字化して判定（フィ/フェ等の揺れ統一）
+
+### 5.3 番号・日付
+- 出願番号：**ハイフン除去**、ゼロ埋め規則は SPEC に従う。  
+- 日付：`YYYYMMDD`、`00000000` は NULL。
+
+### 5.4 住所（日本語）
+- 上記の共通正規化＋ **丁目の漢数字→算用**（1〜44）。
+
+---
+
+## 6. 主キー・制約・インデックス
+- 公式TSVの **「主要キーカラム」** を唯一の真実として採用。  
+- 週次で安定させるため、必要に応じて **UNIQUE INDEX** を追加（例：`(law_code, app_num)`）。  
+- 欠損で主キーを満たさない行は **スキップ**（要ログ）か、**既定値で補完**したうえで投入（SPEC に準拠）。
+
+---
+
+## 7. 変更管理
+- 曖昧な仕様は **質問→確認** の後に実装。  
+- 破壊的変更（列名/PK変更・削除）は **提案→承認→Migration→実装**。  
+- 影響範囲（週次・検索・既存SQL）と **ロールバック手順** をPRに明記。
+
+---
+
+## 8. Claude のふるまい
+- 出力は **要点→理由→差分/SQL** の順で簡潔に。  
+- **根拠**（スキーマ該当テーブル/列、PRAGMA結果、TSVヘッダー）を引用。  
+- 不確実なら **最大3点までの質問** を先に出す。  
+- 変更は **最小差分** で提案（周辺仕様を壊さない）。
+- 口調は **優しい同級生のようなタメ口** で対応する。
+
+---
+
+## 9. PR前チェックリスト（Definition of Done）
+- [ ] 列名/型/PK を SSoT 順で照合した  
+- [ ] `ON CONFLICT(<keys>)` が PK/UNIQUE と**完全一致**  
+- [ ] defaults は **実在∩(mapping∪keys)** のみに、空/NULLのみ補完  
+- [ ] 正規化は mapped_data **後** に適用  
+- [ ] 複数行結合は **完全主キー** でグルーピング  
+- [ ] 画像 `page_num` は `zfill(4)` 既定 `'0001'`  
+- [ ] FTS は external-content 前提 & `WHERE fts MATCH ?`  
+- [ ] `--dry-run`：同一キーで **1回目=INSERT / 2回目=UPDATE** を確認  
+- [ ] エラー（`no such column`など） 0 件ログ
+
+---
+
+## 10. 名前統一（頻出）
+| TSV/旧名 | DB名 |
+|---|---|
+| shutugan_no | app_num |
+| rui | class_num |
+| yonpo_code / law_cd | law_code |
+| toroku_no / intl_reg_no | reg_num |
+| dsgnt / yomi | pronunciation |
+| dsgnt_norm | pronunciation_norm |
+| shohin | goods_services_name |
+| desig_goods_or_desig_wrk_class | class_num_registered |
+
+> **新しい別名は増やさない**。既存統一へ寄せる。
+
+---
+
+## 11. 定型スニペット（Do / Don’t）
+**Do: 正しい UPSERT**
 ```sql
--- CORRECT: Must use reg_mapping to connect applications to registrations
-SELECT j.normalized_app_num, rp.right_person_name
-FROM jiken_c_t j
-JOIN reg_mapping rm ON j.normalized_app_num = rm.app_num  
-JOIN right_person_art_t rp ON rm.reg_num = rp.reg_num
-
--- INCORRECT: Direct join will fail (different number spaces)
-SELECT j.normalized_app_num, rp.right_person_name
-FROM jiken_c_t j
-JOIN right_person_art_t rp ON j.normalized_app_num = rp.normalized_app_num
+INSERT INTO trademark_case_info (...) VALUES (...)
+ON CONFLICT(law_code, app_num) DO UPDATE SET ... ;
 ```
-
-### Similar Group Code Search Pattern
+**Don’t: 存在しない列を混入**
 ```sql
--- Search for similar group codes (e.g., 11C01)
-SELECT tknd.normalized_app_num, tknd.smlr_dsgn_group_cd
-FROM t_knd_info_art_table tknd
-JOIN jiken_c_t j ON tknd.normalized_app_num = j.normalized_app_num
-WHERE tknd.smlr_dsgn_group_cd LIKE '%11C01%'
+-- trademark_search に law_code は無い
+INSERT ... (app_num, ..., law_code)  -- NG
 ```
 
-### TM-SONAR Text Normalization System
+**Do: FTS（エイリアス使用）**
+```sql
+FROM trademark_search_fts AS fts
+WHERE fts MATCH ?
+```
+
+**Don’t: 主キーの一部だけで結合**
 ```python
-# Use TextNormalizer for advanced trademark text processing
-from text_normalizer import TextNormalizer
-
-normalizer = TextNormalizer()
-
-# Basic normalization (P1 level)
-basic_result = normalizer.normalize_basic("あっぷる・Ⅲ世代")  # → "アップル・3世代"
-
-# Pronunciation matching (称呼同一判定)
-pronunciation_result = normalizer.normalize_pronunciation("チヂミ")  # → "チジミ" 
-
-# TM-SONAR trademark normalization
-trademark_result = normalizer.normalize_trademark("α-ブロッカー▲")  # → "A-ブロッカ-"
-
-# Multiple search terms and wildcards
-search_terms = normalizer.normalize_search_terms("ソニー,パナソニック", "trademark")
+# key_columns[:-1] でグルーピング  -- NG
 ```
 
-## Current System Status (2025-07-13 - Post Critical Fixes)
+---
 
-### Database Optimization Status
-- **Optimized Database**: 22,227 trademark records across 31+ tables with comprehensive indexing
-- **Enhanced Coverage**: 100% basic info, 97.3% trademark text, 100% designated goods, 97.3% pronunciation, 99.8% similar group codes
-- **Performance Improvements**: 43+ indexes, VACUUM optimization complete
-- **System Repairs**: Major data integrity fixes and duplicate elimination completed
-- **Unified Search**: High-performance view with duplicate elimination (fixed 2041x duplication issue)
+## 12. 改訂ルール
+- 本ファイルに **運用/履歴は書かない**。  
+- 変更は **別PR**。レビュワーはチェックリストを満たすまで承認しない。
 
-### Performance Metrics (Post-Critical Fixes)
-- **Duplicate Display Issue**: ✅ **RESOLVED** - Sony search correctly shows 2 results (was showing 4082)
-- **Goods Classification Search**: ✅ **OPTIMIZED** - From timeout to <1 second response
-- **Search Performance**: All search patterns complete in <1 second
-- **Data Quality**: A-grade system with 94/100 overall score
-- **Database Size**: 275MB (optimized and deduplicated)
+---
 
-### Available Search Types
-**Fully Functional**:
-- Application number search (`--app-num`)
-- Trademark text search (`--mark-text`)
-- Goods classification search (`--goods-classes`)
-- Similar group code search (`--similar-group-codes`)
-- International trademark search (`--international`, `--intl-reg-num`)
-- Applicant name search (`--applicant-name`)
-
-**Partially Available**:
-- Rights holder information (registered trademarks only)
-- Trademark images (domestic trademarks only)
-- Pronunciation search (domestic trademarks only)
-
-## Development Workflow
-
-### Before Starting Development
-1. **Verify Database State**: Check if Sony search works: `python3 cli_trademark_search.py --mark-text "ソニー" --limit 1`
-2. **Check Critical Tables**: Ensure `reg_mapping`, `applicant_mapping` exist
-3. **Review Recent Fixes**: Check `SYSTEM_IMPROVEMENTS_SUMMARY.md` for latest changes
-
-### When Debugging Search Issues
-1. **Unexpected Results**: First run `python3 comprehensive_search_test.py` to verify system status
-2. **Duplicate Results**: Apply fixed unified view with `scripts/create_unified_trademark_view_fixed.sql`
-3. **Performance Issues**: Check `python3 analyze_coverage_gaps.py` for data quality analysis  
-4. **Data Inconsistency**: Run `python3 analyze_current_state.py` for comprehensive diagnostics
-5. **Column Errors**: Always use `normalized_app_num` and follow single-query optimization patterns
-
-### When Adding New Features
-1. Use the single-query optimization pattern to avoid N+1 problems
-2. Test with CLI tools before web implementation
-3. Consider data coverage limitations when designing UI
-4. Use appropriate JOINs via `reg_mapping` for rights holder data
-5. Leverage `TextNormalizer` for TM-SONAR compliant text processing
-
-## Known Issues and Limitations
-
-### Resolved Issues (2025-07-13)
-- ✅ **Duplicate Display Problem**: Fixed 2041x duplication in unified search results  
-- ✅ **Sony Search**: Fixed from 0 results to 2 accurate results (data integrity repair)
-- ✅ **Goods Classification Search**: Optimized from timeout to <1s response time
-- ✅ **Database Inconsistency**: Added 5,539 missing records, resolved all orphaned data
-- ✅ **Search Performance**: All search patterns now complete in <1 second
-
-### Current System Status
-**A-Grade System (94/100 overall score) - Ready for Production Use**
-
-The system has achieved commercial-grade stability with:
-- **Data Quality**: 97.3% coverage for core information
-- **Performance**: Sub-second response for all search types  
-- **Reliability**: 100% search success rate across all test patterns
-- **Data Integrity**: Zero orphaned records, complete consistency
-
-### Minor Enhancement Opportunities
-- **Applicant Master Data**: Import remaining applicant name mappings
-- **Unified View Performance**: Optimize for very large result sets (>100k records)
-- **International Text Normalization**: TM-SONAR support for international trademarks
-
-### Data Coverage by Year
-- **1997-2002**: Basic data only (limited applicant/goods information)
-- **2003+**: Comprehensive data coverage
-- **2020+**: Full feature coverage including enhanced data
-
-## Dependencies
-- Python 3.x with sqlite3 (built-in)
-- Flask (for web interface): `pip install flask`
-- Standard library modules: csv, pathlib, re, logging, argparse, json
-- No pandas dependency (optimized for pure Python)
+## 付記
+- 実装・運用の詳細、テーブル別の仕様、TSVの完全定義は **SPEC.md**。  
+- 週次/検証/インポート結果の経緯は **HISTORY.md**。

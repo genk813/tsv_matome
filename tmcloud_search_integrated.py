@@ -486,10 +486,6 @@ class TMCloudIntegratedSearch:
         'Ａ４２': '出願却下（方式却理）',
         'Ａ４３': '出願却下（方式指令）',
         'Ａ４５': '出願却下（登録）',
-        # 半角版も追加
-        'A42': '出願却下（方式却理）',
-        'A43': '出願却下（方式指令）',
-        'A45': '出願却下（登録）',
     }
     
     # 商標中間コードマッピング（DOCXファイルから包括的に抽出）
@@ -1386,56 +1382,108 @@ class TMCloudIntegratedSearch:
     # 全角・半角両対応版（計850個）
     TRIAL_INTERMEDIATE_CODE_MAP = {
     "03": "審決",
+    "C03": "審決",
     "04": "審決の予告",
+    "C04": "審決の予告",
     "07": "手続却下処分",
+    "C07": "手続却下処分",
     "09": "手続無効処分",
+    "C09": "手続無効処分",
     "10": "取消理由通知書",
+    "C10": "取消理由通知書",
     "11": "手続補正指令書（請求）（長官）",
+    "C11": "手続補正指令書（請求）（長官）",
     "12": "手続補正指令書（中間）（長官）",
+    "C12": "手続補正指令書（中間）（長官）",
     "13": "拒絶理由通知書",
+    "C13": "拒絶理由通知書",
     "14": "尋問",
+    "C14": "尋問",
     "15": "公告決定",
+    "C15": "公告決定",
     "16": "異議の決定",
+    "C16": "異議の決定",
     "17": "請求書副本の送達通知（答弁指令）",
+    "C17": "請求書副本の送達通知（答弁指令）",
     "18": "異議申立書副本の送付通知",
+    "C18": "異議申立書副本の送付通知",
     "19": "補正の却下の決定",
+    "C19": "補正の却下の決定",
     "20": "審判番号通知",
+    "C20": "審判番号通知",
     "21": "審査前置移管通知",
+    "C21": "審査前置移管通知",
     "22": "審判官指定（変更）通知",
+    "C22": "審判官指定（変更）通知",
     "23": "審理終結通知書",
+    "C23": "審理終結通知書",
     "24": "手続続行通知書（権利異動）",
+    "C24": "手続続行通知書（権利異動）",
     "26": "嘱託書（個人）",
+    "C26": "嘱託書（個人）",
     "27": "通知書（その他）はがき",
+    "C27": "通知書（その他）はがき",
     "28": "再送",
+    "C28": "再送",
     "29": "官報",
+    "C29": "官報",
     "30": "面接記録",
+    "C30": "面接記録",
     "31": "付箋（起案用）",
+    "C31": "付箋（起案用）",
     "32": "審判専門官発指令応答なし",
+    "C32": "審判専門官発指令応答なし",
     "33": "審判官発指令応答なし",
+    "C33": "審判官発指令応答なし",
     "35": "紙出力",
+    "C35": "紙出力",
     "36": "異議答弁戻し",
+    "C36": "異議答弁戻し",
     "37": "異議番号設定",
+    "C37": "異議番号設定",
     "41": "公示送達依頼",
+    "C41": "公示送達依頼",
     "44": "方式完",
+    "C44": "方式完",
     "51": "手続補正書（方式）",
+    "C51": "手続補正書（方式）",
     "53": "意見書・答弁書",
-    "54": "回答書",
+    "C53": "意見書・答弁書",
+    "C54": "回答書",
     "55": "審判請求書",
+    "C55": "審判請求書",
     "57": "弁駁書",
+    "C57": "弁駁書",
     "58": "口頭審理陳述要領書",
+    "C58": "口頭審理陳述要領書",
     "59": "訂正",
+    "C59": "訂正",
     "60": "審判請求書（その他の請求書・申立書を含む）",
+    "C60": "審判請求書（その他の請求書・申立書を含む）",
+    "61": "期間延長請求書（審判）",
+    "C61": "期間延長請求書（審判）",
     "64": "審理再開申立書",
+    "C64": "審理再開申立書",
     "65": "口頭審理・証拠調",
+    "C65": "口頭審理・証拠調",
     "67": "情報提供",
+    "C67": "情報提供",
     "82": "証拠（物件）提出書（翻訳文提出書含む）",
+    "C82": "証拠（物件）提出書（翻訳文提出書含む）",
     "84": "その他提出物件",
+    "C84": "その他提出物件",
     "91": "審査前置移管",
+    "C91": "審査前置移管",
     "92": "審査前置解除",
+    "C92": "審査前置解除",
     "94": "閲覧照会",
+    "C94": "閲覧照会",
     "95": "証明・交付請求",
+    "C95": "証明・交付請求",
     "96": "確定登録通知",
+    "C96": "確定登録通知",
     "99": "行政不服申立",
+    "C99": "行政不服申立",
     "7B": "一括名義変更届（一般承継）",
     "７Ｂ": "一括名義変更届（一般承継）",
     "7A-1": "一括組織変更届（出願人・請求人）",
@@ -7916,8 +7964,8 @@ class TMCloudIntegratedSearch:
         'A33': '取消',
         'A40': '放棄（全部）',
         'A41': '放棄（一部）',
-        'A42': '査定系審判係属中',
-        'A43': '当事者系審判係属中',
+        'A42': '出願却下（方式却理）',
+        'A43': '出願却下（方式指令）',
         'A44': '異議申立係属中',
         'A45': '却下処分',
         'A46': '審査中',
@@ -9288,13 +9336,14 @@ class TMCloudIntegratedSearch:
     
     # ========== 追加検索機能（TMSONAR仕様完全準拠） ==========
     
-    def search_by_rejection_code(self, codes: str, limit: int = 100) -> List[Dict[str, Any]]:
+    def search_by_rejection_code(self, codes: str, limit: int = 100, unified_format: bool = True) -> List[Dict[str, Any]]:
         """拒絶条文コード検索（TMSONAR ID:108）
         
         Args:
             codes: 拒絶条文コード（複数可、前方一致は末尾?）
                    例: 41:3条1項各号, 31:4条1項11号, 30:4条1項10号
             limit: 最大取得件数
+            unified_format: 統一フォーマットで返すか
         
         Returns:
             検索結果リスト
@@ -9361,7 +9410,12 @@ class TMCloudIntegratedSearch:
                 seen.add(key)
                 unique_results.append(r)
         
+        # 統一フォーマットで返す（拒絶条文コード検索は現時点では統一フォーマット対応しない）
         return unique_results[:limit]
+    
+    def search_rejection_reason(self, codes: str, limit: int = 100, unified_format: bool = True) -> List[Dict[str, Any]]:
+        """拒絶条文コード検索のエイリアス（WEB用）"""
+        return self.search_by_rejection_code(codes, limit, unified_format)
     
     def _get_all_rejection_codes(self, limit: int) -> List[Dict[str, Any]]:
         """全拒絶条文取得"""
@@ -10432,6 +10486,7 @@ class TMCloudIntegratedSearch:
                             intermediate_doc_code || ':' || record_date, '|'
                         ) as progress_records
                     FROM (
+                        -- 審査中間記録（従来通り）
                         SELECT app_num, intermediate_doc_code, creation_date as record_date
                         FROM trademark_draft_records
                         WHERE app_num IN ({placeholders})
@@ -10441,8 +10496,40 @@ class TMCloudIntegratedSearch:
                         FROM trademark_application_records
                         WHERE app_num IN ({placeholders})
                         AND intermediate_doc_code IS NOT NULL
+                        
+                        -- 審判中間記録を追加
+                        UNION ALL
+                        SELECT tc.app_num, 'C60' as intermediate_doc_code, tc.appeal_date as record_date
+                        FROM trial_cases tc
+                        WHERE tc.app_num IN ({placeholders})
+                        AND tc.appeal_date IS NOT NULL
+                        
+                        UNION ALL
+                        SELECT tc.app_num, trd.doc_type as intermediate_doc_code, trd.received_date as record_date
+                        FROM trial_cases tc
+                        INNER JOIN trial_received_docs trd ON tc.appeal_num = trd.appeal_num
+                        WHERE tc.app_num IN ({placeholders})
+                        AND trd.doc_type IS NOT NULL
+                        AND trd.doc_type != ''
+                        
+                        UNION ALL
+                        SELECT tc.app_num, tdd.doc_type as intermediate_doc_code, tdd.dispatch_date as record_date
+                        FROM trial_cases tc
+                        INNER JOIN trial_dispatched_docs tdd ON tc.appeal_num = tdd.appeal_num
+                        WHERE tc.app_num IN ({placeholders})
+                        AND tdd.doc_type IS NOT NULL
+                        AND tdd.doc_type != ''
+                        
+                        -- 登録中間記録を追加
+                        UNION ALL
+                        SELECT progress_app_num as app_num, reg_intermediate_code as intermediate_doc_code, process_date as record_date
+                        FROM trademark_progress_info
+                        WHERE progress_app_num IN ({placeholders})
+                        AND reg_intermediate_code IS NOT NULL
+                        AND reg_intermediate_code != ''
+                        AND progress_app_num != '0000000000'
+                        
                         ORDER BY app_num, record_date ASC
-                        -- LIMIT削除: 各出願の全中間記録を取得
                     )
                     GROUP BY app_num
                 )
@@ -10481,8 +10568,8 @@ class TMCloudIntegratedSearch:
                 ORDER BY bd.app_date DESC
             """
             
-            # パラメータを14回繰り返す（各サブクエリで使用 - progress_dataで2回使用）
-            params = batch_app_nums * 14
+            # パラメータを18回繰り返す（各サブクエリで使用）
+            params = batch_app_nums * 18
             cursor.execute(query, params)
             
             # 結果を出願番号ごとにグループ化
@@ -10639,6 +10726,10 @@ class TMCloudIntegratedSearch:
         for record in records_str.split('|'):
             if ':' in record:
                 code, date = record.split(':', 1)
+                
+                # 空のコードはスキップ
+                if not code:
+                    continue
                 
                 # コードマッピングから日本語名を取得
                 # 1. まず審査コード（A系）を確認

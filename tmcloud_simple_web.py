@@ -705,13 +705,21 @@ def index():
     """トップページ"""
     return render_template_string(HTML_TEMPLATE)
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['POST', 'GET'])
 def search():
     """検索API"""
     try:
-        data = request.json
-        search_type = data.get('search_type', 'trademark')
-        keyword = data.get('keyword', '')
+        # GETリクエストの場合
+        if request.method == 'GET':
+            search_type = request.args.get('type', 'trademark')
+            keyword = request.args.get('keyword', '')
+            format_type = request.args.get('format', 'html')
+        # POSTリクエストの場合
+        else:
+            data = request.json
+            search_type = data.get('search_type', 'trademark')
+            keyword = data.get('keyword', '')
+            format_type = 'json'
         
         if not keyword:
             return jsonify({'error': 'キーワードを入力してください'}), 400

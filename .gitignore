@@ -67,4 +67,4 @@ weekly_data/
 
 # Search results
 search_results/
-*.html
+*.html.venv/
