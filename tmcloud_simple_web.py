@@ -7,6 +7,7 @@ TMCloud 簡易Webインターフェース
 from flask import Flask, render_template_string, request, jsonify
 from tmcloud_search_integrated import TMCloudIntegratedSearch
 from pathlib import Path
+import json
 
 app = Flask(__name__)
 
@@ -29,9 +30,9 @@ HTML_TEMPLATE = """
         .result { border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 4px; }
         .result h3 { margin: 0 0 10px 0; color: #333; }
         .field { margin: 5px 0; }
-        .field-label { font-weight: bold; display: inline-block; width: 120px; }
-        .goods-services { margin-left: 120px; }
-        .similar-codes { margin-left: 120px; }
+        .field-label { font-weight: bold; display: inline-block; width: 140px; }
+        .goods-services { margin-left: 140px; }
+        .similar-codes { margin-left: 140px; }
         #searchConditions { max-height: 400px; overflow-y: auto; }
         .condition-item { transition: all 0.3s ease; }
         .condition-item:hover { background: #e8f4f8 !important; }
@@ -102,7 +103,8 @@ HTML_TEMPLATE = """
             {value: 'applicant', label: '出願人'},
             {value: 'similar_group', label: '類似群コード'},
             {value: 'goods_services', label: '商品・役務'},
-            {value: 'rejection_reason', label: '拒絶条文コード'}
+            {value: 'rejection_reason', label: '拒絶条文コード'},
+            {value: 'vienna_code', label: 'ウィーンコード'}
         ];
         
         // 条件を追加する関数
@@ -388,6 +390,10 @@ HTML_TEMPLATE = """
             data.results.forEach((result, index) => {
                 const info = result.basic_info || result;
                 
+                // 拒絶条文コード検索の結果かどうかを判定
+                // search_specificに拒絶条文コード情報があるかチェック
+                const isRejectionSearch = result.search_specific && result.search_specific.rejection_reason_code !== undefined;
+                
                 // 商標名または商標画像を表示
                 let trademarkDisplay = '';
                 if (info.trademark_name === '[商標画像]' && info.trademark_image_data) {
@@ -413,13 +419,23 @@ HTML_TEMPLATE = """
                         ${addField('登録番号', info.reg_num)}
                         ${addField('出願日', formatDate(info.app_date))}
                         ${addField('登録日', formatDate(info.reg_date))}
-                        ${addArrayField('区分', info.classes)}
                 `;
                 
-                html += addArrayField('称呼', info.phonetics);
-                html += addArrayField('出願人', info.applicants);
-                html += addArrayField('代理人', info.agents);
-                html += addArrayField('権利者', info.right_holders);
+                // 拒絶条文コード検索の場合は特別な表示
+                if (isRejectionSearch) {
+                    const rejectionInfo = result.search_specific || {};
+                    // 日本語の条文名があればそれを表示、なければコードを表示
+                    const rejectionDisplay = rejectionInfo.rejection_reason_article || 
+                                           (rejectionInfo.rejection_reason_code ? `コード${rejectionInfo.rejection_reason_code}` : '');
+                    html += addField('拒絶理由', rejectionDisplay);
+                } else {
+                    // 通常の検索結果の場合
+                    html += addArrayField('区分', info.classes);
+                    html += addArrayField('称呼', info.phonetics);
+                    html += addArrayField('出願人', info.applicants);
+                    html += addArrayField('代理人', info.agents);
+                    html += addArrayField('権利者', info.right_holders);
+                }
                 
                 // ステータス情報
                 html += addField('最終処分コード', info.final_disposition_type);
@@ -566,7 +582,7 @@ HTML_TEMPLATE = """
                     
                     // 審査中間記録
                     if (examRecords.length > 0) {
-                        html += `<div class="field"><span class="field-label">審査中間記録 (${examRecords.length}件):</span><br>`;
+                        html += `<div class="field"><span class="field-label">審査中間記録:</span><br>`;
                         examRecords.forEach(record => {
                             const [code, date] = record.split(':');
                             html += `&nbsp;&nbsp;• ${esc(code)} (${esc(date)})<br>`;
@@ -576,7 +592,7 @@ HTML_TEMPLATE = """
                     
                     // 審判中間記録
                     if (trialRecords.length > 0) {
-                        html += `<div class="field"><span class="field-label">審判中間記録 (${trialRecords.length}件):</span><br>`;
+                        html += `<div class="field"><span class="field-label">審判中間記録:</span><br>`;
                         trialRecords.forEach(record => {
                             const [code, date] = record.split(':');
                             html += `&nbsp;&nbsp;• ${esc(code)} (${esc(date)})<br>`;
@@ -586,7 +602,7 @@ HTML_TEMPLATE = """
                     
                     // 登録中間記録
                     if (registrationRecords.length > 0) {
-                        html += `<div class="field"><span class="field-label">登録中間記録 (${registrationRecords.length}件):</span><br>`;
+                        html += `<div class="field"><span class="field-label">登録中間記録:</span><br>`;
                         registrationRecords.forEach(record => {
                             const [code, date] = record.split(':');
                             html += `&nbsp;&nbsp;• ${esc(code)} (${esc(date)})<br>`;
@@ -597,7 +613,7 @@ HTML_TEMPLATE = """
                 
                 // 審判中間記録（trial_intermediate_recordsから）  
                 if (info.trial_intermediate_records && info.trial_intermediate_records.length > 0) {
-                    html += `<div class="field"><span class="field-label">審判中間記録 (${info.trial_intermediate_records.length}件):</span><br>`;
+                    html += `<div class="field"><span class="field-label">審判中間記録:</span><br>`;
                     info.trial_intermediate_records.forEach(record => {
                         const recordText = record['中間記録'] || record['中間コード'] || '';
                         const date = record['日付'] || '';
@@ -610,7 +626,7 @@ HTML_TEMPLATE = """
                 
                 // 登録中間記録（registration_intermediate_recordsから）
                 if (info.registration_intermediate_records && info.registration_intermediate_records.length > 0) {
-                    html += `<div class="field"><span class="field-label">登録中間記録 (${info.registration_intermediate_records.length}件):</span><br>`;
+                    html += `<div class="field"><span class="field-label">登録中間記録:</span><br>`;
                     info.registration_intermediate_records.forEach(record => {
                         const recordText = record['中間記録'] || record['中間コード'] || '';
                         const date = record['日付'] || '';
@@ -750,9 +766,27 @@ def search():
             results = searcher.search_goods_services(keyword, limit=3000, item_and=True, unified_format=True)
         elif search_type == 'rejection_reason':
             results = searcher.search_rejection_reason(keyword, limit=3000, unified_format=True)
+        elif search_type == 'vienna_code':
+            results = searcher.search_by_vienna_code(keyword, limit=3000, unified_format=True)
         else:
             return jsonify({'error': '不明な検索タイプ'})
         
+        # GETリクエストでformat=htmlの場合はHTMLとして表示
+        if request.method == 'GET' and format_type == 'html':
+            # 検索結果ページを返す
+            # スクリプトの最後に追加するようにする（displayResults関数が定義された後で実行する必要がある）
+            result_html = HTML_TEMPLATE.replace(
+                '</script>\n</body>',
+                '\n// 検索結果を自動表示\nwindow.addEventListener("DOMContentLoaded", function() {\n    displayResults(' + 
+                json.dumps({
+                    'results': results,
+                    'count': len(results),
+                    'search_type': search_type,
+                    'keyword': keyword
+                }, ensure_ascii=False) + 
+                ');\n});\n</script>\n</body>'
+            )
+            return result_html
         
         return jsonify({
             'results': results,

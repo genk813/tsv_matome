@@ -6401,66 +6401,6 @@ class TMCloudIntegratedSearch:
         "85": "第8条第5項＋第5条第5項",
         "90": "第65条の4第2項",
         "91": "第15条の3第2項",
-        "99": "その他",
-        # 互換性のため以前のコードも残す
-        "10": "第3条第1項柱書",
-        "11": "第3条第1項第1号",
-        "12": "第3条第1項第2号",
-        "13": "第3条第1項第3号",
-        "14": "第3条第1項第4号",
-        "15": "第3条第1項第5号",
-        "16": "第3条第1項第6号",
-        "17": "第3条第2項",
-        "20": "第4条第1項第1号",
-        "21": "第4条第1項第2号",
-        "22": "第4条第1項第3号",
-        "23": "第4条第1項第4号",
-        "24": "第4条第1項第5号",
-        "25": "第4条第1項第6号",
-        "26": "第4条第1項第7号",
-        "27": "第4条第1項第8号",
-        "28": "第4条第1項第9号",
-        "29": "第4条第1項第10号",
-        "30": "第4条第1項第11号",
-        "31": "第4条第1項第12号",
-        "32": "第4条第1項第13号",
-        "33": "第4条第1項第14号",
-        "34": "第4条第1項第15号",
-        "35": "第4条第1項第16号",
-        "36": "第4条第1項第17号",
-        "37": "第4条第1項第18号",
-        "38": "第4条第1項第19号",
-        "40": "第5条",
-        "41": "第5条第5項",
-        "45": "第6条第1項",
-        "46": "第6条第2項",
-        "47": "第6条第1項及び第2項",
-        "50": "第7条",
-        "51": "第7条の2",
-        "52": "第8条第1項",
-        "53": "第8条第2項",
-        "54": "第8条第3項",
-        "55": "第8条第5項",
-        "60": "第15条第1号",
-        "61": "第15条第2号",
-        "62": "第15条第3号",
-        "63": "第15条第1号及び第3号",
-        "64": "第15条の3第2項",
-        "65": "第53条の2",
-        "66": "第64条",
-        "70": "第65条第1項",
-        "80": "第68条の16第1項",
-        "81": "第68条の17第1項",
-        "82": "第68条の20第1項",
-        "83": "第68条の20第2項",
-        "84": "第68条の20第3項",
-        "85": "第68条の20第4項",
-        "90": "第68条の28第1項",
-        "91": "第68条の28第2項",
-        "92": "第68条の40第1項",
-        "93": "第68条の40第2項",
-        "94": "第77条第2項において準用する特許法第17条第3項",
-        "95": "第77条第2項において準用する特許法第17条の2第1項",
         "99": "その他"
     }
     
@@ -8771,7 +8711,7 @@ class TMCloudIntegratedSearch:
     
     # ========== ウィーンコード検索 ==========
     
-    def search_by_vienna_code(self, codes: str, limit: int = 100, unified_format: bool = False) -> List[Dict[str, Any]]:
+    def search_by_vienna_code(self, codes: str, limit: int = 100, unified_format: bool = True) -> List[Dict[str, Any]]:
         """ウィーンコード検索（TMSONAR ID:112）
         
         Args:
@@ -8808,10 +8748,19 @@ class TMCloudIntegratedSearch:
             params = []
             
             if len(parts) >= 1 and parts[0]:
-                # 大分類は2桁でゼロパディング
-                large_class = parts[0].zfill(2)
-                conditions.append("large_class = ?")
-                params.append(large_class)
+                # 大分類の処理（?で前方一致対応）
+                if '?' in parts[0]:
+                    # 前方一致検索
+                    prefix = parts[0].replace('?', '')
+                    if prefix:
+                        conditions.append("large_class LIKE ?")
+                        params.append(prefix.zfill(2) + '%')
+                    # ?のみの場合は条件を追加しない（全件取得）
+                else:
+                    # 完全一致
+                    large_class = parts[0].zfill(2)
+                    conditions.append("large_class = ?")
+                    params.append(large_class)
             
             if len(parts) >= 2 and parts[1]:
                 # 中分類も2桁でゼロパディング
@@ -9356,6 +9305,7 @@ class TMCloudIntegratedSearch:
         results = []
         
         for term in terms:
+            term = term.strip()  # 前後の空白を削除
             if term.endswith('?'):
                 # 前方一致検索
                 prefix = term[:-1]
@@ -9372,7 +9322,7 @@ class TMCloudIntegratedSearch:
                     FROM trademark_draft_records tdr
                     LEFT JOIN trademark_search ts ON tdr.app_num = ts.app_num
                     LEFT JOIN trademark_case_info tci ON tdr.app_num = tci.app_num
-                    WHERE tdr.rejection_reason_code LIKE ? ESCAPE '\\'
+                    WHERE TRIM(tdr.rejection_reason_code) LIKE ? ESCAPE '\\'
                     ORDER BY tdr.draft_date DESC
                     LIMIT ?
                 """
@@ -9393,7 +9343,7 @@ class TMCloudIntegratedSearch:
                     FROM trademark_draft_records tdr
                     LEFT JOIN trademark_search ts ON tdr.app_num = ts.app_num
                     LEFT JOIN trademark_case_info tci ON tdr.app_num = tci.app_num
-                    WHERE tdr.rejection_reason_code = ?
+                    WHERE TRIM(tdr.rejection_reason_code) = ?
                     ORDER BY tdr.draft_date DESC
                     LIMIT ?
                 """
@@ -9410,8 +9360,23 @@ class TMCloudIntegratedSearch:
                 seen.add(key)
                 unique_results.append(r)
         
-        # 統一フォーマットで返す（拒絶条文コード検索は現時点では統一フォーマット対応しない）
-        return unique_results[:limit]
+        # 統一フォーマットで返す
+        if unified_format:
+            # 拒絶条文コード情報を含めたsearch_specific_dataを作成
+            app_nums = list(set(r['app_num'] for r in unique_results))[:limit]
+            search_specific = {}
+            for app_num in app_nums:
+                # その出願番号の拒絶条文コード情報を取得
+                rejection_info = next((r for r in unique_results if r['app_num'] == app_num), {})
+                search_specific[app_num] = {
+                    'rejection_reason_code': rejection_info.get('rejection_reason_code'),
+                    'intermediate_doc_code': rejection_info.get('intermediate_doc_code'),
+                    'draft_date': rejection_info.get('draft_date'),
+                    'dispatch_date': rejection_info.get('dispatch_date')
+                }
+            return self._format_unified_result(app_nums, search_specific)
+        else:
+            return unique_results[:limit]
     
     def search_rejection_reason(self, codes: str, limit: int = 100, unified_format: bool = True) -> List[Dict[str, Any]]:
         """拒絶条文コード検索のエイリアス（WEB用）"""
@@ -10329,6 +10294,9 @@ class TMCloudIntegratedSearch:
                         tmi.conti_prd_expire_date,
                         tmi.next_pen_payment_limit_date,
                         tbi.conti_prd_expire_date as basic_expiry_date,
+                        -- 分納関連フィールド
+                        tbi.installments_id,
+                        tbi.instllmnt_expr_date_aft_des_date,
                         -- 追加項目
                         tci.app_type1,
                         tci.app_type2,
@@ -10498,12 +10466,7 @@ class TMCloudIntegratedSearch:
                         AND intermediate_doc_code IS NOT NULL
                         
                         -- 審判中間記録を追加
-                        UNION ALL
-                        SELECT tc.app_num, 'C60' as intermediate_doc_code, tc.appeal_date as record_date
-                        FROM trial_cases tc
-                        WHERE tc.app_num IN ({placeholders})
-                        AND tc.appeal_date IS NOT NULL
-                        
+                        -- trial_received_docsから取得（C60も含む）
                         UNION ALL
                         SELECT tc.app_num, trd.doc_type as intermediate_doc_code, trd.received_date as record_date
                         FROM trial_cases tc
@@ -10568,8 +10531,8 @@ class TMCloudIntegratedSearch:
                 ORDER BY bd.app_date DESC
             """
             
-            # パラメータを18回繰り返す（各サブクエリで使用）
-            params = batch_app_nums * 18
+            # パラメータを17回繰り返す（各サブクエリで使用）
+            params = batch_app_nums * 17
             cursor.execute(query, params)
             
             # 結果を出願番号ごとにグループ化
@@ -10607,7 +10570,12 @@ class TMCloudIntegratedSearch:
                         'pub_article_gazette_date': row['pub_article_gazette_date'],
                         # 存続期間・分納情報を追加
                         'conti_prd_expire_date': row['conti_prd_expire_date'] or row['basic_expiry_date'],  # management_infoまたはbasic_itemsから
-                        'next_pen_payment_limit_date': row['next_pen_payment_limit_date'],
+                        # 分納期限日: installments_id='1'の場合は instllmnt_expr_date_aft_des_date を使用
+                        'next_pen_payment_limit_date': (
+                            row['instllmnt_expr_date_aft_des_date'] 
+                            if row['installments_id'] == '1' and row['instllmnt_expr_date_aft_des_date']
+                            else row['next_pen_payment_limit_date']
+                        ),
                         # 出願種別・付加情報（コードを日本語に変換）
                         'app_type1': self._convert_code_to_name(row['app_type1'], 'app_type'),
                         'app_type2': self._convert_code_to_name(row['app_type2'], 'app_type'),
@@ -10944,8 +10912,27 @@ class TMCloudIntegratedSearch:
             elif search_type == 'similar_group':
                 # 類似群コード検索
                 results = self.search_by_similar_group(keyword, limit=10000, unified_format=False)
+            elif search_type == 'rejection_reason':
+                # 拒絶条文コード検索（例: "3?" 前方一致、"30" 完全一致、カンマ区切り複数可）
+                results = self.search_by_rejection_code(keyword.strip(), limit=10000, unified_format=False)
+            elif search_type == 'vienna_code':
+                # ウィーンコード検索（例: "1.3.20" 階層的前方一致、複数指定可）
+                results = self.search_by_vienna_code(keyword.strip(), limit=10000, unified_format=False)
             else:
                 continue
+            
+            # 拒絶条文コード検索の場合、詳細情報を保持
+            if search_type == 'rejection_reason' and results:
+                if not hasattr(self, '_temp_rejection_info'):
+                    self._temp_rejection_info = {}
+                for r in results:
+                    if r.get('app_num'):
+                        self._temp_rejection_info[r['app_num']] = {
+                            'rejection_reason_code': r.get('rejection_reason_code'),
+                            'intermediate_doc_code': r.get('intermediate_doc_code'),
+                            'draft_date': r.get('draft_date'),
+                            'dispatch_date': r.get('dispatch_date')
+                        }
             
             all_results.append(set(r.get('app_num') for r in results if r.get('app_num')))
         
@@ -10966,12 +10953,29 @@ class TMCloudIntegratedSearch:
         # 統一フォーマットで結果を取得
         if unified_format:
             app_nums_list = list(common_app_nums)[:limit]
-            search_specific = {
-                app_num: {
+            search_specific = {}
+            
+            for app_num in app_nums_list:
+                specific_data = {
                     'matched_conditions': [c.get('type') + ':' + c.get('keyword', '') for c in conditions],
                     'operator': operator
-                } for app_num in app_nums_list
-            }
+                }
+                
+                # 拒絶条文コード情報があれば追加
+                if hasattr(self, '_temp_rejection_info') and app_num in self._temp_rejection_info:
+                    rejection_info = self._temp_rejection_info[app_num]
+                    # 拒絶条文コードを日本語に変換
+                    if rejection_info.get('rejection_reason_code'):
+                        code = rejection_info['rejection_reason_code']
+                        rejection_info['rejection_reason_article'] = self.REJECTION_REASON_CODE_MAP.get(code, f"コード{code}")
+                    specific_data.update(rejection_info)
+                
+                search_specific[app_num] = specific_data
+            
+            # 一時データをクリア
+            if hasattr(self, '_temp_rejection_info'):
+                delattr(self, '_temp_rejection_info')
+            
             return self._format_unified_result(app_nums_list, search_specific)
         else:
             # 基本情報を取得して返す
