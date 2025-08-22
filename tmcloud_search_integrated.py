@@ -6298,19 +6298,46 @@ class TMCloudIntegratedSearch:
     "Ｒ９４": "返戻通知（移転）",
 }
 
-    # 審判種別コードマッピング
+    # 審判種別コードマッピング（コードINDEX 18170準拠）
     APPEAL_TYPE_MAP = {
         "01": "拒絶査定不服審判",
-        "02": "補正却下不服審判",
-        "03": "無効審判",
-        "04": "取消審判",
-        "05": "異議申立",
-        "06": "訂正審判",
-        "07": "再審",
-        "11": "判定請求",
-        "21": "異議申立(マドプロ)",
+        "70": "補正却下不服審判",
+        "10": "無効審判",
+        "11": "全部無効",
+        "12": "一部無効",
+        "13": "更新登録無効（全部）",
+        "14": "更新登録無効（一部）",
+        "15": "延長登録無効（全部）",
+        "16": "延長登録無効（一部）",
+        "17": "書換登録無効（全部）",
+        "18": "書換登録無効（一部）",
+        "20": "取消審判",
+        "21": "不使用取消審判",
+        "22": "不正使用取消審判",
+        "23": "代理人による不正登録取消審判",
+        "24": "混同による取消審判",
+        "26": "商標法53条の2による取消審判",
+        "40": "訂正審判",
+        "50": "判定請求",
+        "65": "登録異議申立て",
+        "80": "査定不服審判",
+        "81": "書換査定不服審判",
         "31": "取消審判(マドプロ)",
-        "41": "無効審判(マドプロ)"
+        "32": "取消審判(マドプロ・不使用)",
+        "41": "無効審判(マドプロ)",
+        "91": "参加許否の決定",
+        "92": "登録異議の決定",
+        "93": "補正却下の決定",
+        "94": "証拠保全の決定",
+        "95": "受継許否の決定",
+        "99": "その他",
+        # 3桁コード（詳細分類）
+        "113": "全部無効（新々無効）",
+        "114": "全部無効（新実用）",
+        "123": "一部無効（新々無効）",
+        "124": "一部無効（新実用）",
+        "651": "登録異議申立て（特許）",
+        "652": "登録異議申立て（実用新案）"
     }
     
     # 審判条文コードマッピング（審判条文記事用）
@@ -10741,34 +10768,37 @@ class TMCloudIntegratedSearch:
             'registration': registration_records
         }
     
+    # 特殊商標タイプマッピング（コードINDEX C1390準拠）
+    SPECIAL_MARK_TYPE_MAP = {
+        "1": "立体商標",
+        "2": "音商標",
+        "3": "動き商標",
+        "4": "ホログラム商標",
+        "5": "色彩のみからなる商標",
+        "6": "位置商標",
+        "9": "その他の商標"
+    }
+    
     def _determine_trademark_type(self, row) -> str:
-        """商標タイプを判定
+        """商標タイプを判定（コードINDEX C1390準拠）
         
         Args:
             row: データベースの行データ
         
         Returns:
-            商標タイプ名
+            商標タイプ名（標準文字/立体商標/音商標/etc）
         """
         # sqlite3.Rowオブジェクトを辞書に変換
         row_dict = dict(row) if not isinstance(row, dict) else row
         
-        # 標準文字商標
+        # 標準文字商標（最優先で表示）
         if row_dict.get('standard_char_exist') == '1':
             return '標準文字'
         
-        # 特殊商標（立体、ホログラム等）
-        if row_dict.get('special_mark_exist') == '1':
-            # TODO: より詳細な判定が必要な場合は、追加テーブルを参照
-            return '特殊商標'
-        
-        # 色彩商標
-        if row_dict.get('color_exist') == '1':
-            return '色彩'
-        
-        # 図形商標（画像データがある場合）
-        if row_dict.get('trademark_image_data'):
-            return '図形'
+        # 特殊商標タイプ（C1390コードで判定）
+        special_type = row_dict.get('special_mark_type') or row_dict.get('special_trademark_type')
+        if special_type and special_type in self.SPECIAL_MARK_TYPE_MAP:
+            return self.SPECIAL_MARK_TYPE_MAP[special_type]
         
         # 通常商標
         return '通常'
@@ -10893,6 +10923,8 @@ class TMCloudIntegratedSearch:
             if search_type == 'trademark':
                 results = self.search_trademark_name(keyword, limit=10000, unified_format=False)
             elif search_type == 'phonetic':
+                results = self.search_phonetic(keyword, limit=10000, unified_format=False)
+            elif search_type == 'phonetic_exact':
                 results = self.search_phonetic(keyword, limit=10000, unified_format=False)
             elif search_type == 'class':
                 # 複合検索用の区分検索メソッドを使用

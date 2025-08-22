@@ -8,6 +8,7 @@ from flask import Flask, render_template_string, request, jsonify
 from tmcloud_search_integrated import TMCloudIntegratedSearch
 from pathlib import Path
 import json
+import sys
 
 app = Flask(__name__)
 
@@ -30,9 +31,19 @@ HTML_TEMPLATE = """
         .result { border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 4px; }
         .result h3 { margin: 0 0 10px 0; color: #333; }
         .field { margin: 5px 0; }
-        .field-label { font-weight: bold; display: inline-block; width: 140px; }
-        .goods-services { margin-left: 140px; }
-        .similar-codes { margin-left: 140px; }
+        .field-label { font-weight: bold; display: inline-block; width: 140px; vertical-align: top; }
+        .field-value { display: inline-block; margin-left: 140px; }
+        .goods-services { 
+            margin-left: 140px; 
+            padding-left: 55px;  /* 「区分XX: 」の幅 */
+            text-indent: -55px;  /* 最初の行だけ左に戻す */
+        }
+        .similar-codes { 
+            margin-left: 140px;
+            padding-left: 55px;  /* 「区分XX: 」の幅 */
+            text-indent: -55px;  /* 最初の行だけ左に戻す */
+        }
+        .intermediate-records { margin-left: 140px; }
         #searchConditions { max-height: 400px; overflow-y: auto; }
         .condition-item { transition: all 0.3s ease; }
         .condition-item:hover { background: #e8f4f8 !important; }
@@ -285,7 +296,8 @@ HTML_TEMPLATE = """
                     }
                     
                     const data = await response.json();
-                    console.log('複合検索結果:', data);  // デバッグ
+                    console.log('[DEBUG] API response:', data);  // デバッグ詳細
+                    console.log('[DEBUG] Number of results:', data.results ? data.results.length : 0);  // デバッグ
                     displayResults(data);
                 } catch (error) {
                     console.error('複合検索エラー:', error);
@@ -329,6 +341,10 @@ HTML_TEMPLATE = """
         
         function displayResults(data) {
             const resultsDiv = document.getElementById('results');
+            
+            console.log('[DEBUG] displayResults called with:', data);  // デバッグ
+            console.log('[DEBUG] data.results:', data.results);  // デバッグ
+            console.log('[DEBUG] data.results length:', data.results ? data.results.length : 'undefined');  // デバッグ
             
             if (data.error) {
                 resultsDiv.innerHTML = `<div style="color: red">エラー: ${esc(data.error)}</div>`;
@@ -582,59 +598,54 @@ HTML_TEMPLATE = """
                     
                     // 審査中間記録
                     if (examRecords.length > 0) {
-                        html += `<div class="field"><span class="field-label">審査中間記録:</span><br>`;
+                        html += `<div class="field"><span class="field-label">審査中間記録:</span></div>`;
                         examRecords.forEach(record => {
                             const [code, date] = record.split(':');
-                            html += `&nbsp;&nbsp;• ${esc(code)} (${esc(date)})<br>`;
+                            html += `<div class="intermediate-records">• ${esc(code)} (${esc(date)})</div>`;
                         });
-                        html += `</div>`;
                     }
                     
                     // 審判中間記録
                     if (trialRecords.length > 0) {
-                        html += `<div class="field"><span class="field-label">審判中間記録:</span><br>`;
+                        html += `<div class="field"><span class="field-label">審判中間記録:</span></div>`;
                         trialRecords.forEach(record => {
                             const [code, date] = record.split(':');
-                            html += `&nbsp;&nbsp;• ${esc(code)} (${esc(date)})<br>`;
+                            html += `<div class="intermediate-records">• ${esc(code)} (${esc(date)})</div>`;
                         });
-                        html += `</div>`;
                     }
                     
                     // 登録中間記録
                     if (registrationRecords.length > 0) {
-                        html += `<div class="field"><span class="field-label">登録中間記録:</span><br>`;
+                        html += `<div class="field"><span class="field-label">登録中間記録:</span></div>`;
                         registrationRecords.forEach(record => {
                             const [code, date] = record.split(':');
-                            html += `&nbsp;&nbsp;• ${esc(code)} (${esc(date)})<br>`;
+                            html += `<div class="intermediate-records">• ${esc(code)} (${esc(date)})</div>`;
                         });
-                        html += `</div>`;
                     }
                 }
                 
                 // 審判中間記録（trial_intermediate_recordsから）  
                 if (info.trial_intermediate_records && info.trial_intermediate_records.length > 0) {
-                    html += `<div class="field"><span class="field-label">審判中間記録:</span><br>`;
+                    html += `<div class="field"><span class="field-label">審判中間記録:</span></div>`;
                     info.trial_intermediate_records.forEach(record => {
                         const recordText = record['中間記録'] || record['中間コード'] || '';
                         const date = record['日付'] || '';
                         if (recordText || date) {
-                            html += `&nbsp;&nbsp;• ${esc(recordText)} (${esc(date)})<br>`;
+                            html += `<div class="intermediate-records">• ${esc(recordText)} (${esc(date)})</div>`;
                         }
                     });
-                    html += `</div>`;
                 }
                 
                 // 登録中間記録（registration_intermediate_recordsから）
                 if (info.registration_intermediate_records && info.registration_intermediate_records.length > 0) {
-                    html += `<div class="field"><span class="field-label">登録中間記録:</span><br>`;
+                    html += `<div class="field"><span class="field-label">登録中間記録:</span></div>`;
                     info.registration_intermediate_records.forEach(record => {
                         const recordText = record['中間記録'] || record['中間コード'] || '';
                         const date = record['日付'] || '';
                         if (recordText || date) {
-                            html += `&nbsp;&nbsp;• ${esc(recordText)} (${esc(date)})<br>`;
+                            html += `<div class="intermediate-records">• ${esc(recordText)} (${esc(date)})</div>`;
                         }
                     });
-                    html += `</div>`;
                 }
                 
                 // 旧フィールド（互換性のため残す）
@@ -644,7 +655,10 @@ HTML_TEMPLATE = """
                 
                 if (info.goods_services && Object.keys(info.goods_services).length > 0) {
                     html += '<div class="field"><span class="field-label">商品・役務:</span></div>';
-                    for (const [cls, goods] of Object.entries(info.goods_services)) {
+                    // 区分を数値として昇順ソート
+                    const sortedClasses = Object.keys(info.goods_services).sort((a, b) => parseInt(a) - parseInt(b));
+                    for (const cls of sortedClasses) {
+                        const goods = info.goods_services[cls];
                         // 全文表示（折りたたみ廃止）
                         html += `<div class="goods-services">区分${esc(cls)}: ${esc(goods)}</div>`;
                     }
@@ -652,7 +666,10 @@ HTML_TEMPLATE = """
                 
                 if (info.similar_groups && Object.keys(info.similar_groups).length > 0) {
                     html += '<div class="field"><span class="field-label">類似群コード:</span></div>';
-                    for (const [cls, codes] of Object.entries(info.similar_groups)) {
+                    // 区分を数値として昇順ソート
+                    const sortedClasses = Object.keys(info.similar_groups).sort((a, b) => parseInt(a) - parseInt(b));
+                    for (const cls of sortedClasses) {
+                        const codes = info.similar_groups[cls];
                         html += `<div class="similar-codes">区分${esc(cls)}: ${codes.map(c => esc(c)).join(', ')}</div>`;
                     }
                 }
@@ -746,9 +763,13 @@ def search():
         if search_type == 'trademark':
             results = searcher.search_trademark_name(keyword, limit=3000, unified_format=True)
         elif search_type == 'phonetic':
-            results = searcher.search_phonetic(keyword, limit=3000, unified_format=True, search_type='pronunciation')
+            print(f"[DEBUG] Phonetic search for: {keyword}", file=sys.stderr)
+            results = searcher.search_phonetic(keyword, limit=3000, unified_format=True)
+            print(f"[DEBUG] Phonetic search returned {len(results)} results", file=sys.stderr)
         elif search_type == 'phonetic_exact':
-            results = searcher.search_phonetic(keyword, limit=3000, unified_format=True, search_type='exact')
+            print(f"[DEBUG] Phonetic exact search for: {keyword}", file=sys.stderr)
+            results = searcher.search_phonetic(keyword, limit=3000, unified_format=True)
+            print(f"[DEBUG] Phonetic exact search returned {len(results)} results", file=sys.stderr)
         elif search_type == 'app_num':
             result = searcher.search_by_app_num(keyword, unified_format=True)  # 単一番号検索
             results = [result] if result else []  # リストに変換
