@@ -83,15 +83,21 @@ HTML_TEMPLATE = """
         // 拒絶条文コードヘルパーの表示/非表示切り替え
         function toggleRejectionCodeHelper(selectElement) {
             const conditionDiv = selectElement.closest('.condition-item');
-            const helper = conditionDiv.querySelector('.rejection-code-helper');
+            const rejectionHelper = conditionDiv.querySelector('.rejection-code-helper');
+            const typeHelper = conditionDiv.querySelector('.trademark-type-helper');
             
+            // すべてのヘルパーを非表示
+            if (rejectionHelper) rejectionHelper.style.display = 'none';
+            if (typeHelper) typeHelper.style.display = 'none';
+            
+            // 選択されたタイプに応じてヘルパーを表示
             if (selectElement.value === 'rejection_reason') {
-                if (helper) {
-                    helper.style.display = 'block';
+                if (rejectionHelper) {
+                    rejectionHelper.style.display = 'block';
                 }
-            } else {
-                if (helper) {
-                    helper.style.display = 'none';
+            } else if (selectElement.value === 'trademark_type') {
+                if (typeHelper) {
+                    typeHelper.style.display = 'block';
                 }
             }
         }
@@ -101,12 +107,14 @@ HTML_TEMPLATE = """
         
         // 現在の検索結果を保持
         let currentSearchResults = null;
+        let originalSearchResults = null;  // ソート前のオリジナルデータを保持
         
         // 検索タイプのオプション
         const searchTypes = [
             {value: 'trademark', label: '商標名'},
             {value: 'phonetic', label: '称呼（発音同一）'},
             {value: 'phonetic_exact', label: '称呼（表記同一）'},
+            {value: 'trademark_type', label: '商標タイプ'},
             {value: 'app_num', label: '出願番号'},
             {value: 'reg_num', label: '登録番号'},
             {value: 'intl_reg_num', label: '国際登録番号'},
@@ -149,6 +157,21 @@ HTML_TEMPLATE = """
                     <input type="text" id="keyword_${conditionCount}" placeholder="キーワード" style="width: 250px;">
                     <button type="button" onclick="removeCondition(${conditionCount})" style="background: #dc3545; color: white; padding: 3px 8px; margin-left: 10px;">削除</button>
                 </label>
+                <div class="trademark-type-helper" style="display:none; margin-top:10px; padding:10px; background:#f9f9f9; border:1px solid #ddd; border-radius:4px;">
+                    <div style="font-size:14px; color:#666;">
+                        <strong>商標タイプの指定方法:</strong><br>
+                        • <code>通常</code> - 通常商標<br>
+                        • <code>標準文字</code> - 標準文字商標<br>
+                        • <code>立体商標</code> - 立体商標<br>
+                        • <code>音商標</code> - 音商標<br>
+                        • <code>動き商標</code> - 動き商標<br>
+                        • <code>ホログラム商標</code> - ホログラム商標<br>
+                        • <code>色彩のみからなる商標</code> - 色彩商標<br>
+                        • <code>位置商標</code> - 位置商標<br>
+                        • <code>その他の商標</code> - その他<br>
+                        • <code>?</code> - 全タイプ<br>
+                    </div>
+                </div>
                 <div class="rejection-code-helper" style="display:none; margin-top:10px; padding:10px; background:#f9f9f9; border:1px solid #ddd; border-radius:4px;">
                     <div style="font-size:14px; color:#666;">
                         <strong>拒絶条文コード入力例:</strong><br>
@@ -244,9 +267,22 @@ HTML_TEMPLATE = """
             }
         }
         
-        // 初期状態で1つの条件を追加（単一条件検索もできるように）
+        // 初期状態で3つの条件を追加（商標名、称呼、区分）
         window.addEventListener('DOMContentLoaded', () => {
+            // 1つ目：商標名
             addCondition();
+            const cond1 = document.querySelector('#condition_1 select');
+            if (cond1) cond1.value = 'trademark';
+            
+            // 2つ目：称呼（表記同一）
+            addCondition();
+            const cond2 = document.querySelector('#condition_2 select');
+            if (cond2) cond2.value = 'phonetic_exact';
+            
+            // 3つ目：区分
+            addCondition();
+            const cond3 = document.querySelector('#condition_3 select');
+            if (cond3) cond3.value = 'class';
             
             // 検索フォームの処理
             document.getElementById('complexSearchForm').onsubmit = async (e) => {
@@ -358,6 +394,7 @@ HTML_TEMPLATE = """
             
             // 検索結果を保持
             currentSearchResults = data;
+            originalSearchResults = JSON.parse(JSON.stringify(data));  // ディープコピーでオリジナルを保存
             
             let html = `<h2>検索結果: ${esc(data.results.length)}件</h2>`;
             
@@ -682,10 +719,10 @@ HTML_TEMPLATE = """
         
         // 並び替え関数
         function sortResults() {
-            if (!currentSearchResults || !currentSearchResults.results) return;
+            if (!originalSearchResults || !originalSearchResults.results) return;
             
             const sortBy = document.getElementById('sortSelector').value;
-            const results = [...currentSearchResults.results]; // コピーを作成
+            const results = [...originalSearchResults.results]; // オリジナルからコピーを作成
             
             // ソート処理
             results.sort((a, b) => {
@@ -724,9 +761,195 @@ HTML_TEMPLATE = """
                 }
             });
             
-            // ソート済みの結果で再表示
-            const sortedData = {...currentSearchResults, results: results};
-            displayResults(sortedData);
+            // ソート済みの結果で再表示（originalSearchResultsは変更しない）
+            currentSearchResults = {...originalSearchResults, results: results, currentSort: sortBy};
+            // displayResultsを呼ばずに直接DOM更新（無限ループを防ぐ）
+            updateResultsDOM(currentSearchResults);
+        }
+        
+        // DOMのみを更新する関数（グローバル変数を変更しない）
+        function updateResultsDOM(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!data.results || data.results.length === 0) {
+                resultsDiv.innerHTML = '<div>検索結果がありません。</div>';
+                return;
+            }
+            
+            let html = `<h2>検索結果: ${esc(data.results.length)}件</h2>`;
+            
+            // 並び替えセレクタを追加（イベントリスナーは再設定しない）
+            html += `
+                <div class="sort-section">
+                    <label for="sortSelector">並び替え:</label>
+                    <select id="sortSelector">
+                        <option value="app_date_desc">出願日（新しい順）</option>
+                        <option value="app_date_asc">出願日（古い順）</option>
+                        <option value="reg_date_desc">登録日（新しい順）</option>
+                        <option value="reg_date_asc">登録日（古い順）</option>
+                        <option value="trademark_asc">商標名（昇順）</option>
+                        <option value="trademark_desc">商標名（降順）</option>
+                    </select>
+                </div>
+            `;
+            
+            // 残りの表示処理は displayResults と同じ
+            data.results.forEach((result, index) => {
+                const info = result.basic_info || result;
+                
+                html += `<div class="result-item">`;
+                html += `<h3>${index + 1}. ${esc(info.trademark_name || 'N/A')}</h3>`;
+                
+                // 画像表示  
+                if (info.image) {
+                    html += `<div class="trademark-image"><img src="data:image/jpeg;base64,${info.image}" alt="商標画像"></div>`;
+                }
+                
+                // 基本情報（条件付き表示）
+                html += addField('出願番号', info.app_num);
+                html += addField('登録番号', info.reg_num);
+                html += addField('国際登録番号', info.intl_reg_num);
+                html += addField('出願日', formatDate(info.app_date));
+                html += addField('登録日', formatDate(info.reg_date));
+                html += addField('称呼', info.phonetic);
+                
+                if (info.applicants && info.applicants.length > 0) {
+                    html += `<div class="field"><span class="field-label">出願人:</span> ${info.applicants.map(a => esc(a.name || a)).join(', ')}</div>`;
+                }
+                
+                html += addArrayField('区分', info.classes);
+                html += addArrayField('ウィーン図形分類', info.vienna_codes);
+                
+                const hasValidDefensiveInfo = (
+                    info.defensive_num || 
+                    info.defensive_orig_app_num || 
+                    info.defensive_orig_reg_num || 
+                    info.defensive_orig_split_num || 
+                    info.renewal_defensive_num || 
+                    info.rewrite_defensive_num
+                );
+                
+                if (hasValidDefensiveInfo) {
+                    html += `<div class="field"><span class="field-label">防護標章関連:</span><br>`;
+                    if (info.defensive_num && info.defensive_num !== '000') {
+                        html += `&nbsp;&nbsp;• 防護標章番号: ${esc(info.defensive_num)}<br>`;
+                    }
+                    if (info.defensive_orig_app_num) {
+                        html += `&nbsp;&nbsp;• 元出願番号: ${esc(info.defensive_orig_app_num)}<br>`;
+                    }
+                    if (info.defensive_orig_reg_num) {
+                        html += `&nbsp;&nbsp;• 元登録番号: ${esc(info.defensive_orig_reg_num)}<br>`;
+                    }
+                    if (info.defensive_orig_split_num) {
+                        html += `&nbsp;&nbsp;• 元分割番号: ${esc(info.defensive_orig_split_num)}<br>`;
+                    }
+                    if (info.renewal_defensive_num) {
+                        html += `&nbsp;&nbsp;• 更新防護標章番号: ${esc(info.renewal_defensive_num)}<br>`;
+                    }
+                    if (info.rewrite_defensive_num) {
+                        html += `&nbsp;&nbsp;• 書換防護標章番号: ${esc(info.rewrite_defensive_num)}<br>`;
+                    }
+                    html += `</div>`;
+                }
+                
+                // 中間記録を審査・審判・登録に分けて表示
+                if (info.progress_records) {
+                    // バックエンドから分類済みのデータを受け取る
+                    const examRecords = info.progress_records.exam || [];
+                    const trialRecords = info.progress_records.trial || [];
+                    const registrationRecords = info.progress_records.registration || [];
+                    
+                    // 審査中間記録
+                    if (examRecords.length > 0) {
+                        html += `<div class="field"><span class="field-label">審査中間記録:</span></div>`;
+                        examRecords.forEach(record => {
+                            const [code, date] = record.split(':');
+                            html += `<div class="intermediate-records">• ${esc(code)} (${esc(date)})</div>`;
+                        });
+                    }
+                    
+                    // 審判中間記録
+                    if (trialRecords.length > 0) {
+                        html += `<div class="field"><span class="field-label">審判中間記録:</span></div>`;
+                        trialRecords.forEach(record => {
+                            const [code, date] = record.split(':');
+                            html += `<div class="intermediate-records">• ${esc(code)} (${esc(date)})</div>`;
+                        });
+                    }
+                    
+                    // 登録中間記録
+                    if (registrationRecords.length > 0) {
+                        html += `<div class="field"><span class="field-label">登録中間記録:</span></div>`;
+                        registrationRecords.forEach(record => {
+                            const [code, date] = record.split(':');
+                            html += `<div class="intermediate-records">• ${esc(code)} (${esc(date)})</div>`;
+                        });
+                    }
+                }
+                
+                // 審判中間記録（trial_intermediate_recordsから）  
+                if (info.trial_intermediate_records && info.trial_intermediate_records.length > 0) {
+                    html += `<div class="field"><span class="field-label">審判中間記録:</span></div>`;
+                    info.trial_intermediate_records.forEach(record => {
+                        const recordText = record['中間記録'] || record['中間コード'] || '';
+                        const date = record['日付'] || '';
+                        if (recordText || date) {
+                            html += `<div class="intermediate-records">• ${esc(recordText)} (${esc(date)})</div>`;
+                        }
+                    });
+                }
+                
+                // 登録中間記録（registration_intermediate_recordsから）
+                if (info.registration_intermediate_records && info.registration_intermediate_records.length > 0) {
+                    html += `<div class="field"><span class="field-label">登録中間記録:</span></div>`;
+                    info.registration_intermediate_records.forEach(record => {
+                        const recordText = record['中間記録'] || record['中間コード'] || '';
+                        const date = record['日付'] || '';
+                        if (recordText || date) {
+                            html += `<div class="intermediate-records">• ${esc(recordText)} (${esc(date)})</div>`;
+                        }
+                    });
+                }
+                
+                // 旧フィールド（互換性のため残す）
+                html += addField('最終処分コード', info.disposition_code);
+                html += addField('最終処分日', formatDate(info.disposition_date));
+                html += addField('ステータス', info.status);
+                
+                if (info.goods_services && Object.keys(info.goods_services).length > 0) {
+                    html += '<div class="field"><span class="field-label">商品・役務:</span></div>';
+                    // 区分を数値として昇順ソート
+                    const sortedClasses = Object.keys(info.goods_services).sort((a, b) => parseInt(a) - parseInt(b));
+                    for (const cls of sortedClasses) {
+                        const goods = info.goods_services[cls];
+                        // 全文表示（折りたたみ廃止）
+                        html += `<div class="goods-services">区分${esc(cls)}: ${esc(goods)}</div>`;
+                    }
+                }
+                
+                if (info.similar_groups && Object.keys(info.similar_groups).length > 0) {
+                    html += '<div class="field"><span class="field-label">類似群コード:</span></div>';
+                    // 区分を数値として昇順ソート
+                    const sortedClasses = Object.keys(info.similar_groups).sort((a, b) => parseInt(a) - parseInt(b));
+                    for (const cls of sortedClasses) {
+                        const codes = info.similar_groups[cls];
+                        html += `<div class="similar-codes">区分${esc(cls)}: ${codes.map(c => esc(c)).join(', ')}</div>`;
+                    }
+                }
+                
+                html += '</div>';
+            });
+            
+            resultsDiv.innerHTML = html;
+            
+            // 並び替えセレクタにイベントリスナーを再設定
+            const sortSelector = document.getElementById('sortSelector');
+            if (sortSelector) {
+                sortSelector.onchange = sortResults;
+                // 現在のソート値を保持
+                const currentSort = currentSearchResults.currentSort || 'app_date_desc';
+                sortSelector.value = currentSort;
+            }
         }
     </script>
 </body>
@@ -761,7 +984,9 @@ def search():
         searcher = TMCloudIntegratedSearch(str(DB_PATH))
         
         if search_type == 'trademark':
+            print(f"[DEBUG] Trademark search for: {keyword}", file=sys.stderr)
             results = searcher.search_trademark_name(keyword, limit=3000, unified_format=True)
+            print(f"[DEBUG] Trademark search returned {len(results)} results", file=sys.stderr)
         elif search_type == 'phonetic':
             print(f"[DEBUG] Phonetic search for: {keyword}", file=sys.stderr)
             results = searcher.search_phonetic(keyword, limit=3000, unified_format=True)
@@ -833,8 +1058,11 @@ def search_complex():
         # 毎回新しい接続を作成
         searcher = TMCloudIntegratedSearch(str(DB_PATH))
         
-        # 複合検索実行（より多くの結果を取得）
-        results = searcher.search_complex(conditions, operator=operator, limit=3000, unified_format=True)
+        # デフォルトのlimit設定
+        limit = 3000
+        
+        # 複合検索実行
+        results = searcher.search_complex(conditions, operator=operator, limit=limit, unified_format=True)
         
         return jsonify({
             'results': results,
